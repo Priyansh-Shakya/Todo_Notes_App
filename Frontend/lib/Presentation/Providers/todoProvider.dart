@@ -1,0 +1,40 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Data/DataSources/RemoteSources/noteApiService.dart';
+import 'package:todo_notes/Data/DataSources/RemoteSources/todoApiService.dart';
+import 'package:todo_notes/Data/Repositories/noteRepo.dart';
+import 'package:todo_notes/Data/Repositories/todoRepo.dart';
+import 'package:todo_notes/Domain/Entities/noteEntity.dart';
+import 'package:todo_notes/Domain/Entities/todoEntity.dart';
+import 'package:todo_notes/Presentation/Notifiers/noteNotifier.dart';
+import 'package:todo_notes/Presentation/Notifiers/todoNotifier.dart';
+import 'package:todo_notes/Presentation/Providers/authProvider.dart';
+
+//Services
+
+final todoServiceProvider = Provider<TodoService>((ref) {
+  final dio = ref.watch(dioProvider);
+  return TodoService(dio: dio);
+});
+
+final noteServiceProvider = Provider<NoteService>((ref) {
+  final dio = ref.watch(dioProvider);
+  return NoteService(dio: dio);
+});
+
+//Repositories
+
+final todoRepoProvider = Provider<TodoRepo>((ref) {
+  final api = ref.watch(todoServiceProvider);
+  return TodoRepo(api: api);
+});
+
+final noteRepoProvider = Provider<NoteRepo>((ref) {
+  final api = ref.watch(noteServiceProvider);
+  return NoteRepo(api: api);
+});
+
+final noteNotifierProvider =
+    AsyncNotifierProvider<NoteNotifier, List<NoteEntity>>(NoteNotifier.new);
+
+final todoNotifierProvider =
+    AsyncNotifierProvider<TodoNotifier, List<TodoEntity>>(TodoNotifier.new);

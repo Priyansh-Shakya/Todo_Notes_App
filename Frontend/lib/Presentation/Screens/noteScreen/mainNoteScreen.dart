@@ -1,0 +1,196 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Presentation/Providers/noteStateProvider.dart';
+import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Presentation/Screens/noteScreen/createNote.dart';
+import 'package:todo_notes/Presentation/Screens/noteScreen/noteDetails.dart';
+
+class MainNoteScreen extends ConsumerWidget {
+  const MainNoteScreen({super.key});
+
+  // -------------------------
+  // helpers (LEFT UNTOUCHED)
+  // -------------------------
+  String createdAtSliced(String? timeString) {
+    // If null or empty, use current time
+    final time = (timeString != null && timeString.isNotEmpty)
+        ? DateTime.tryParse(timeString)
+        : DateTime.now();
+
+    final t = time ?? DateTime.now(); // fallback if parsing fails
+
+    final day = t.day.toString().padLeft(2, '0');
+    final month = t.month.toString().padLeft(2, '0');
+    final year = t.year.toString();
+
+    return '$day/$month/$year';
+  }
+
+  int numberOfLines(String content) => content.split('\n').length;
+
+  String slicedTask(String content) {
+    final splited = content.split("\n");
+    if (splited.length <= 3) return content;
+    return "${splited[0]}\n${splited[1]}\n${splited[2]}\n...";
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notesAsync = ref.watch(noteNotifierProvider);
+    final isDeleteMode = ref.watch(deleteModeProvider);
+    final selectedIds = ref.watch(selectedIdsProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Notes", style: Theme.of(context).textTheme.headlineMedium),
+        centerTitle: true,
+        actions: [
+          if (isDeleteMode && selectedIds.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                await ref
+                    .read(noteNotifierProvider.notifier)
+                    .deleteNote(ids: selectedIds.toList());
+
+                ref.read(deleteModeProvider.notifier).state = false;
+                ref.read(selectedIdsProvider.notifier).state = {};
+              },
+            ),
+        ],
+      ),
+      body: notesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text('Error: $e')),
+        data: (notes) {
+          if (notes.isEmpty) {
+            return const Center(child: Text("No Notes yet, create new"));
+          }
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: notes.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.80, // tweak to adjust card height
+            ),
+            itemBuilder: (context, index) {
+              final note = notes[index];
+              final isSelected = selectedIds.contains(note.id);
+              debugPrint("Pinned: ${note.pinned}");
+
+              return GestureDetector(
+                onTap: () {
+                  if (isDeleteMode) {
+                    _toggleSelection(ref, note.id);
+                  } else {
+                    debugPrint(
+                      "id:${note.id}\ntitle:${note.title}\ncontent:${note.content}",
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NoteDetails(noteId: note.id, isPinned: note.pinned),
+                      ),
+                    );
+                  }
+                },
+                onLongPress: () {
+                  ref.read(deleteModeProvider.notifier).state = true;
+                  _toggleSelection(ref, note.id);
+                },
+                child: Card(
+                  elevation: 6,
+                  color: isSelected
+                      ? Colors.blue.withOpacity(0.3)
+                      : Theme.of(context).cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              note.title,
+                              style: Theme.of(context).textTheme.titleLarge,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 10),
+                            Expanded(
+                              child: Text(
+                                (numberOfLines(note.content) > 3)
+                                    ? slicedTask(note.content)
+                                    : note.content,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.bottomRight,
+                                child: Text(
+                                  createdAtSliced(note.createdAt),
+                                  style: Theme.of(context).textTheme.bodySmall!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .color!
+                                            .withOpacity(0.5),
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (note.pinned)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Icon(
+                            Icons.push_pin,
+                            color: Color(0xFFFFD700),
+                            size: 18,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add, size: 30, color: Colors.blue),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CreateNote()),
+        ),
+      ),
+    );
+  }
+
+  void _toggleSelection(WidgetRef ref, int id) {
+    final selected = ref.read(selectedIdsProvider);
+    final newSet = {...selected};
+
+    newSet.contains(id) ? newSet.remove(id) : newSet.add(id);
+
+    ref.read(selectedIdsProvider.notifier).state = newSet;
+
+    // Auto-disable delete mode if nothing selected
+    if (newSet.isEmpty) {
+      ref.read(deleteModeProvider.notifier).state = false;
+    }
+  }
+}

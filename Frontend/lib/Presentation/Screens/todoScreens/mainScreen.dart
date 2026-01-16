@@ -1,0 +1,169 @@
+import "package:flutter/material.dart";
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
+import 'package:todo_notes/Presentation/Screens/todoScreens/createTask.dart';
+
+class MainTodoScreen extends ConsumerStatefulWidget {
+  const MainTodoScreen({super.key});
+
+  @override
+  ConsumerState<MainTodoScreen> createState() => _MainTodoScreenState();
+}
+
+class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
+  bool _infoShown = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final todoAsync = ref.watch(todoNotifierProvider);
+    final notifier = ref.read(todoNotifierProvider.notifier);
+
+    todoAsync.whenOrNull(
+      data: (todos) {
+        if (todos.isNotEmpty && !_infoShown) {
+          _infoShown = true;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showInfoOnce(context);
+          });
+        }
+      },
+    );
+
+    final Widget todos = todoAsync.when(
+      data: (todo) {
+        if (todo.isEmpty) {
+          return const Center(child: Text("No Task yet, create new"));
+        }
+
+        return ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: todo.length,
+          itemBuilder: (context, index) {
+            final oneTodo = todo[index];
+
+            final formatedCreatedAt = createdAtSliced(oneTodo.createdAt);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+              child: Card(
+                elevation: 10,
+                color: Theme.of(context).cardColor,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                    childrenPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+
+                    leading: Text(
+                      "${index + 1}",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    title: Text(
+                      oneTodo.task.toString(),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          fillColor: WidgetStateProperty.resolveWith<Color>((
+                            states,
+                          ) {
+                            if (states.contains(WidgetState.selected)) {
+                              // when checked — red background
+                              return Colors.blue;
+                            } // when unchecked — light grey (optional)
+                            return Colors.red;
+                          }),
+                          checkColor: const Color(
+                            0xff39ff40,
+                          ), // ✅ tick mark color ),
+                          value: oneTodo.isComplete,
+                          onChanged: (bool? newVal) async {
+                            final updatedTodo = oneTodo.copyWith(
+                              isComplete: newVal,
+                            );
+                            await notifier.updateTodo(
+                              id: oneTodo.id!,
+                              todo: updatedTodo,
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          color: Theme.of(context).colorScheme.error,
+                          onPressed: () async {
+                            bool? result = await showDeleteDialog(context);
+                            if (result == true) {
+                              await notifier.deleteTodo(id: oneTodo.id!);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+
+                    // 👇 THIS IS THE EXTRA INFO PANEL
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity, // ⭐ FORCE FULL WIDTH
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Created At: $formatedCreatedAt",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Notifications: Not Set Yet",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      error: (err, st) {
+        print(err);
+        return Text("Error : $err");
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Tasks", style: Theme.of(context).textTheme.headlineMedium),
+        centerTitle: true,
+      ),
+      body: todos,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add, size: 30, color: Colors.blue),
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => CreateTask()));
+        },
+      ),
+    );
+  }
+}

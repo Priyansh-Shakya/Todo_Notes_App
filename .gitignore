@@ -1,0 +1,21 @@
+# --------------------
+# Backend (Python)
+# --------------------
+Backend/.venv/
+Backend/__pycache__/
+Backend/.env
+Backend/*.sqlite3
+
+# --------------------
+# Frontend (Flutter)
+# --------------------
+Frontend/build/
+Frontend/.dart_tool/
+Frontend/.idea/
+Frontend/.vscode/
+
+# --------------------
+# OS
+# --------------------
+.DS_Store
+Thumbs.db
