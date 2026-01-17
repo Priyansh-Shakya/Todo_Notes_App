@@ -49,7 +49,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               child: Card(
                 elevation: 2,
-
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
 
@@ -98,7 +98,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                           },
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                           color: Theme.of(context).colorScheme.error,
                           onPressed: () async {
                             bool? result = await showDeleteDialog(context);
@@ -151,6 +151,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
     );
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
       appBar: AppBar(
         title: Text("Tasks", style: Theme.of(context).textTheme.headlineMedium),
         centerTitle: true,

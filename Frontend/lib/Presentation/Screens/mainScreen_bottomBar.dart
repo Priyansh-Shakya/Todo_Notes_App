@@ -54,15 +54,20 @@ class _MainScreenState extends State<MainScreen> {
       body: screens.elementAt(selectedScreen),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Task'),
-          BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Note'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.task, color: Colors.red),
+            label: 'Task',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.note, color: Colors.red),
+            label: 'Note',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings, color: Colors.red),
             label: 'Settings',
           ),
         ],
         currentIndex: selectedScreen,
-
         onTap: onScreenTapped,
       ),
     );

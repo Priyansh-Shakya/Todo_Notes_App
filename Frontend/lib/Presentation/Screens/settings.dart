@@ -27,7 +27,7 @@ class Settings extends ConsumerWidget {
             padding: EdgeInsets.all(16),
             child: Container(
               decoration: BoxDecoration(
-                // color: Theme.of(context).cardColor,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
               child: Padding(
@@ -40,6 +40,11 @@ class Settings extends ConsumerWidget {
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     Switch(
+                      focusColor: Colors.green,
+                      inactiveThumbColor: Colors.red,
+                      activeTrackColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerLow,
                       activeThumbColor: Colors.green,
                       value: isDark,
                       onChanged: (value) {

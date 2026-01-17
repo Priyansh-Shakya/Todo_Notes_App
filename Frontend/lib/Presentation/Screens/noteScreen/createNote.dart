@@ -54,7 +54,10 @@ class _CreateNoteState extends ConsumerState<CreateNote> {
                 ),
               );
             },
-            icon: Icon(isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+            icon: Icon(
+              isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+              color: Colors.amber,
+            ),
           ),
           IconButton(onPressed: createNote, icon: Icon(Icons.check)),
         ],

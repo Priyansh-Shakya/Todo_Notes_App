@@ -41,6 +41,7 @@ class MainNoteScreen extends ConsumerWidget {
     final selectedIds = ref.watch(selectedIdsProvider);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
       appBar: AppBar(
         title: Text("Notes", style: Theme.of(context).textTheme.headlineMedium),
         centerTitle: true,
@@ -105,7 +106,9 @@ class MainNoteScreen extends ConsumerWidget {
                 child: Card(
                   elevation: 6,
 
-                  color: isSelected ? Colors.blue.withOpacity(0.3) : null,
+                  color: isSelected
+                      ? Colors.blue.withOpacity(0.3)
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

@@ -80,7 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-         color: Theme.of(context).colorScheme.primaryContainer,
+        color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -117,7 +117,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              
             ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -141,7 +140,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              
 
               suffixIcon: IconButton(
                 icon: Icon(
@@ -153,7 +151,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 },
               ),
             ),
-             style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 15),
 
