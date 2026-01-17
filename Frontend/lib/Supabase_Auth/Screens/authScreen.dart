@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
@@ -81,7 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
+         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -106,7 +105,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             controller: emailCtrl,
             decoration: InputDecoration(
               labelText: "Email",
-              labelStyle: Theme.of(context).textTheme.bodyMedium,
+              // labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              //   color: const Color.fromARGB(255, 209, 208, 208),
+              // ),
               prefixIcon: const Icon(Icons.email_outlined),
               border: const OutlineInputBorder(),
               focusedBorder: OutlineInputBorder(
@@ -116,8 +117,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              filled: true,
-              fillColor: Colors.black54,
+              
             ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -129,7 +129,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             obscureText: obscurePass,
             decoration: InputDecoration(
               labelText: "Password",
-              labelStyle: Theme.of(context).textTheme.bodyMedium,
+              // labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              //   color: const Color.fromARGB(255, 209, 208, 208),
+              // ),
               prefixIcon: const Icon(Icons.lock_outline),
               border: const OutlineInputBorder(),
               focusedBorder: OutlineInputBorder(
@@ -139,8 +141,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              filled: true,
-              fillColor: Colors.black54,
+              
+
               suffixIcon: IconButton(
                 icon: Icon(
                   obscurePass ? Icons.visibility_off : Icons.visibility,
@@ -151,7 +153,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 },
               ),
             ),
-            style: Theme.of(context).textTheme.bodyMedium,
+             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 15),
 
@@ -185,7 +187,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: Colors.blue,
                 decoration: TextDecoration.underline,
-                decorationColor: Colors.blue,
+                decorationColor: const Color.fromARGB(255, 5, 119, 212),
                 decorationThickness: 2,
               ),
             ),

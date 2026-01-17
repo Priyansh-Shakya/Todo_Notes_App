@@ -5,7 +5,8 @@ import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'http://192.168.29.138:8000/',
+      // Replace with your actual backend URL : https://todo-notes-app-backend-fastapi.onrender.com/
+      baseUrl: 'https://todo-notes-app-backend-fastapi.onrender.com/',
 
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),

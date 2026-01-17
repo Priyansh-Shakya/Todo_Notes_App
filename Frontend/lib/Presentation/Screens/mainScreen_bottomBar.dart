@@ -53,23 +53,16 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: screens.elementAt(selectedScreen),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Task'),
+          BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Note'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.task, color: Colors.red),
-            label: 'Task',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.note, color: Colors.red),
-            label: 'Note',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings, color: Colors.red),
+            icon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
         currentIndex: selectedScreen,
-        selectedItemColor: Colors.blue,
+
         onTap: onScreenTapped,
       ),
     );

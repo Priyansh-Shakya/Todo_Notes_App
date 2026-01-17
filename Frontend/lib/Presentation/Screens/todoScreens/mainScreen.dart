@@ -48,8 +48,8 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               child: Card(
-                elevation: 10,
-                color: Theme.of(context).cardColor,
+                elevation: 2,
+
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
 

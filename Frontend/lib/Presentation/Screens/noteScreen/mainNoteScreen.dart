@@ -104,9 +104,9 @@ class MainNoteScreen extends ConsumerWidget {
                 },
                 child: Card(
                   elevation: 6,
-                  color: isSelected
-                      ? Colors.blue.withOpacity(0.3)
-                      : Theme.of(context).cardColor,
+
+                  color: isSelected ? Colors.blue.withOpacity(0.3) : null,
+
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
