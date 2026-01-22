@@ -6,20 +6,28 @@ class AuthRepo implements AuthenticationRepo {
   AuthRepo({SupabaseClient? cli}) : client = cli ?? Supabase.instance.client;
   @override
   Future<User?> signUpWithEmail(AuthData data) async {
-    final res = await client.auth.signUp(
-      password: data.pass,
-      email: data.email,
-    );
-    return res.user;
+    try {
+      final res = await client.auth.signUp(
+        email: data.email,
+        password: data.pass,
+      );
+      return res.user;
+    } catch (_) {
+      throw Exception('Invalid email or password');
+    }
   }
 
   @override
   Future<User?> signInWithEmail(AuthData data) async {
-    final res = await client.auth.signInWithPassword(
-      password: data.pass,
-      email: data.email,
-    );
-    return res.user;
+    try {
+      final res = await client.auth.signInWithPassword(
+        email: data.email,
+        password: data.pass,
+      );
+      return res.user;
+    } catch (_) {
+      throw Exception('Invalid email or password');
+    }
   }
 
   @override

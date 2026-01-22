@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Core/Helpers/sharedPref.dart';
 import 'package:todo_notes/Presentation/Screens/noteScreen/mainNoteScreen.dart';
 
@@ -38,6 +39,8 @@ class _MainScreenState extends State<MainScreen> {
 
   void onScreenTapped(int index) {
     setState(() {
+      //play nav sound
+      Soundmanager.playNavSound();
       selectedScreen = index;
       print(selectedScreen);
       if (selectedScreen == 2) {

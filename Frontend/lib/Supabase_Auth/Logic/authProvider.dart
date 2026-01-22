@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Core/ENV/env.dart';
@@ -8,8 +9,11 @@ import 'package:todo_notes/Supabase_Auth/Mock_Test/mock_auth_repo.dart';
 import 'abstractRepo.dart';
 
 final tokenProvider = Provider<String?>((ref) {
-  final session = ref.watch(authNotifierProvider).value;
-  return session?.accessToken;
+  final authRepo = ref.read(authRepoProvider);
+  final token = authRepo.currentSession?.accessToken;
+
+  debugPrint('Token: $token');
+  return token;
 });
 
 // final dioProvider = Provider<Dio>((ref) {
@@ -51,7 +55,8 @@ final authRepoProvider = Provider<AuthenticationRepo>((ref) {
   final client = ref.watch(supabaseClientProvider);
 
   if (Env.useMockAuth) {
-    return MockAuthRepo(); // Use mock repo if the flag is set True.
+    return MockAuthRepo()
+        as AuthenticationRepo; // Use mock repo if the flag is set True.
   }
 
   return AuthRepo(cli: client);

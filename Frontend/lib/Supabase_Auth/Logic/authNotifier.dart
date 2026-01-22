@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/abstractRepo.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
@@ -11,53 +9,53 @@ class AuthNotifier extends AsyncNotifier<Session?> {
   late final AuthenticationRepo repo;
   StreamSubscription<AuthState>? sub;
 
+  String? formError;
+
   @override
   Future<Session?> build() async {
-    repo = ref.read(authRepoProvider); // initialize once
-    final completer = Completer<Session?>();
+    repo = ref.read(authRepoProvider);
 
-    sub = repo.getAuthState().listen((authState) async {
-      final session = authState.session;
-
-      // 🔑 Refresh token if needed
-      Session? refreshedSession = session;
-      if (session != null &&
-          session.expiresAt != null &&
-          DateTime.now().isAfter(
-            DateTime.fromMillisecondsSinceEpoch(
-              session.expiresAt! * 1000,
-            ).subtract(const Duration(minutes: 2)),
-          )) {
-        refreshedSession =
-            (await Supabase.instance.client.auth.refreshSession()).session;
-      }
-
-      // ✅ Update state with latest session
-      state = AsyncValue.data(refreshedSession);
-
-      // ✅ Refresh dependent data providers
-      ref.read(todoNotifierProvider.notifier).refreshList();
-      ref.read(noteNotifierProvider.notifier).refreshList();
-      debugPrint("♻️ Data providers refreshed due to auth state change.");
-
-      // Complete the future for build() only once
-      if (!completer.isCompleted) {
-        completer.complete(refreshedSession);
-      }
+    sub = repo.getAuthState().listen((authState) {
+      state = AsyncValue.data(authState.session);
     });
 
     ref.onDispose(() => sub?.cancel());
-    return completer.future;
+
+    return repo.currentSession;
   }
 
   Future<void> signUpWithEmail(AuthData data) async {
     state = const AsyncLoading();
-    await repo.signUpWithEmail(data);
+    formError = null;
+
+    try {
+      await repo.signUpWithEmail(data);
+    } on AuthException catch (e) {
+      // 👇 THIS is the key
+      formError = e.message;
+      state = const AsyncData(null); // ⬅️ DO NOT use AsyncError
+    } catch (e) {
+      // truly fatal errors only
+      formError = e.toString();
+      state = AsyncData(null);
+    }
   }
 
   Future<void> signInWithEmail(AuthData data) async {
     state = const AsyncLoading();
-    await repo.signInWithEmail(data);
+    formError = null;
+
+    try {
+      await repo.signInWithEmail(data);
+    } on AuthException catch (e) {
+      // 👇 THIS is the key
+      formError = e.message;
+      state = const AsyncData(null); // ⬅️ DO NOT use AsyncError
+    } catch (e) {
+      // truly fatal errors only
+      formError = e.toString();
+      state = AsyncData(null);
+    }
   }
 
   Future<void> signInWithGoogle() async {
@@ -66,5 +64,6 @@ class AuthNotifier extends AsyncNotifier<Session?> {
 
   Future<void> signOut() async {
     await repo.signOut();
+    // listener will emit null session
   }
 }

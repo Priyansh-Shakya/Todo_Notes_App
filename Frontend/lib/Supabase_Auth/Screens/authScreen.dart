@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
+final isLogInModeProvider = StateProvider((ref) => true);
+
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -14,12 +16,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final passCtrl = TextEditingController();
   bool obscurePass = true;
 
-  /// 👇 NEW: Login / SignUp toggle
-  bool isLogin = false;
-
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authNotifierProvider);
+
+    /// 👇 NEW: Login / SignUp toggle
+    bool isLogin = ref.watch(isLogInModeProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -61,14 +63,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 24),
                   _buildGoogleBtn(),
                   const SizedBox(height: 12),
-                  _buildFacebookBtn(), // 👈 kept exactly as you said!
+                  _buildFacebookBtn(), // 👈 kept exactly as you said!a
                 ],
               ),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text("Auth Error: $err")),
+        error: (_, __) => Center(child: Text('Something went wrong.')),
       ),
     );
   }
@@ -77,6 +79,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   // LOGIN / SIGNUP CARD
   // --------------------------
   Widget _buildAuthCard(BuildContext context) {
+    bool isLogin = ref.watch(isLogInModeProvider);
+    final notifier = ref.watch(authNotifierProvider.notifier);
+    final formError = notifier.formError;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -105,9 +111,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             controller: emailCtrl,
             decoration: InputDecoration(
               labelText: "Email",
-              // labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              //   color: const Color.fromARGB(255, 209, 208, 208),
-              // ),
+              labelStyle: Theme.of(context).textTheme.bodyMedium,
               prefixIcon: const Icon(Icons.email_outlined),
               border: const OutlineInputBorder(),
               focusedBorder: OutlineInputBorder(
@@ -117,6 +121,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
+              // filled: true,
+              // fillColor: Colors.black54,
             ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -128,9 +134,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             obscureText: obscurePass,
             decoration: InputDecoration(
               labelText: "Password",
-              // labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              //   color: const Color.fromARGB(255, 209, 208, 208),
-              // ),
+              labelStyle: Theme.of(context).textTheme.bodyMedium,
               prefixIcon: const Icon(Icons.lock_outline),
               border: const OutlineInputBorder(),
               focusedBorder: OutlineInputBorder(
@@ -140,7 +144,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-
+              // filled: true,
+              // fillColor: Colors.black54,
               suffixIcon: IconButton(
                 icon: Icon(
                   obscurePass ? Icons.visibility_off : Icons.visibility,
@@ -153,7 +158,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 25),
+
+          if (formError != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                formError,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
 
           // SUBMIT BUTTON
           SizedBox(
@@ -177,7 +197,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
           // MODE SWITCH
           TextButton(
-            onPressed: () => setState(() => isLogin = !isLogin),
+            onPressed: () => setState(
+              () => ref.read(isLogInModeProvider.notifier).state = !isLogin,
+            ),
             child: Text(
               isLogin
                   ? "Don't have an account? Create one"
@@ -185,7 +207,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: Colors.blue,
                 decoration: TextDecoration.underline,
-                decorationColor: const Color.fromARGB(255, 5, 119, 212),
+                decorationColor: Colors.blue,
                 decorationThickness: 2,
               ),
             ),
@@ -231,19 +253,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   // COMBINED LOGIN / SIGNUP HANDLER
   // --------------------------
   Future<void> _submitAuth() async {
+    bool isLogin = ref.watch(isLogInModeProvider);
     final notifier = ref.read(authNotifierProvider.notifier);
-
-    print(emailCtrl.text);
-    print(passCtrl.text);
-
     final data = (email: emailCtrl.text.trim(), pass: passCtrl.text.trim());
 
-    try {
-      if (isLogin) {
-        await notifier.signInWithEmail(data);
-      } else {
-        await notifier.signUpWithEmail(data);
-      }
-    } catch (_) {}
+    if (isLogin) {
+      await notifier.signInWithEmail(data);
+    } else {
+      await notifier.signUpWithEmail(data);
+    }
   }
 }

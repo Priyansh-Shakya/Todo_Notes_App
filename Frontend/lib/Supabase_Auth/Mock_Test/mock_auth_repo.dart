@@ -31,9 +31,7 @@ class MockAuthRepo implements AuthenticationRepo {
 
     _session = _createSession(data.email);
 
-    _controller.add(
-      AuthState(AuthChangeEvent.signedIn, _session),
-    );
+    _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
 
     return _session!.user;
   }
@@ -53,9 +51,7 @@ class MockAuthRepo implements AuthenticationRepo {
 
     _session = _createSession(data.email);
 
-    _controller.add(
-      AuthState(AuthChangeEvent.signedIn, _session),
-    );
+    _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
 
     return _session!.user;
   }
@@ -71,9 +67,7 @@ class MockAuthRepo implements AuthenticationRepo {
 
     _session = _createSession(email);
 
-    _controller.add(
-      AuthState(AuthChangeEvent.signedIn, _session),
-    );
+    _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
   }
 
   // -------------------------------
@@ -83,9 +77,7 @@ class MockAuthRepo implements AuthenticationRepo {
   Future<void> signOut() async {
     _session = null;
 
-    _controller.add(
-      const AuthState(AuthChangeEvent.signedOut, null),
-    );
+    _controller.add(const AuthState(AuthChangeEvent.signedOut, null));
   }
 
   // -------------------------------

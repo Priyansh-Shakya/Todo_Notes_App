@@ -11,7 +11,6 @@ class AuthGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
-    print('🧱 AuthGate rebuild: $authState');
     return Scaffold(
       body: authState.when(
         data: (session) {
