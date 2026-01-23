@@ -13,6 +13,7 @@ class NotificationData {
     List<TimeOfDay>? pickedTimes,
   }) : selectedDays = selectedDays ?? {},
        pickedTimes = pickedTimes ?? [];
+
   bool isReady(NotificationType type) {
     if (type == NotificationType.weekly) {
       return selectedDays.isNotEmpty && pickedTimes.isNotEmpty;

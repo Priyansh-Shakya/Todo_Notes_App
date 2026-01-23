@@ -17,6 +17,8 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
   late final TextEditingController taskCtr;
   final NotificationData notiData = NotificationData();
 
+  bool isNotiOn = false;
+
   @override
   void initState() {
     super.initState();
@@ -43,21 +45,31 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
       print("Task : ${taskCtr.text}");
 
       final ready = notiData.isReady(type);
-      if (!ready) {
-        if (type == NotificationType.weekly) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Please Select Week Days and Time for Notification",
+      if (isNotiOn) {
+        if (!ready) {
+          if (type == NotificationType.weekly) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Please Select Week Days and Time for Notification",
+                ),
               ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Please Select Date and Time for Notification"),
-            ),
-          );
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Please Select Date and Time for Notification"),
+              ),
+            );
+          }
+        }
+        if (ready) {
+          debugPrint(notiData.pickedDate.toString());
+          debugPrint(notiData.selectedDays.toString());
+          debugPrint(notiData.pickedTimes.toString());
+
+          Navigator.of(context).pop();
+          ref.read(todoNotifierProvider.notifier).createTodo(payload: todo);
         }
 
         debugPrint(notiData.pickedDate.toString());
@@ -66,11 +78,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
 
         debugPrint(notiData.pickedTimes.toString());
       }
-      if (ready) {
-        debugPrint(notiData.pickedDate.toString());
-        debugPrint(notiData.selectedDays.toString());
-        debugPrint(notiData.pickedTimes.toString());
-
+      if (!isNotiOn) {
         Navigator.of(context).pop();
         ref.read(todoNotifierProvider.notifier).createTodo(payload: todo);
       }
@@ -108,11 +116,41 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
                 ),
               ),
               SizedBox(height: 35),
-              Text(
-                "Notifications",
-                style: Theme.of(context).textTheme.headlineMedium,
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Notifications",
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      Switch(
+                        value: isNotiOn,
+                        focusColor: Colors.green,
+                        inactiveThumbColor: Colors.red,
+                        activeTrackColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
+                        activeThumbColor: Colors.green,
+
+                        onChanged: (val) {
+                          setState(() {
+                            isNotiOn = !isNotiOn;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              NotificationScreen(notiData: notiData),
+
+              if (isNotiOn) NotificationScreen(notiData: notiData),
             ],
           ),
         ),
