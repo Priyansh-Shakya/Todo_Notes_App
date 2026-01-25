@@ -1,9 +1,32 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Data/Repositories/todoRepo.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+
+//--------- only read----------------------------------------------
+
+class TodoReadNotifier extends AsyncNotifier<List<TodoReadEntity>> {
+  late final TodoRepo repo;
+
+  @override
+  FutureOr<List<TodoReadEntity>> build() async {
+    repo = ref.watch(todoRepoProvider);
+    final todo = await repo.getAll();
+    
+    return todo;
+  }
+
+  Future<void> refreshReadTodo() async {
+    state = AsyncLoading();
+    state = await AsyncValue.guard(() => repo.getAll());
+  }
+}
+
+//----------- create , update , delete --------------------------------
 
 class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
   late final TodoRepo repo;
@@ -12,23 +35,24 @@ class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
   FutureOr<List<TodoEntity>> build() async {
     repo = ref.watch(todoRepoProvider);
 
-    final todo = await repo.getAll();
-    return todo;
+    return [];
   }
 
-  Future<void> refreshList() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async => await repo.getAll());
-  }
-
-  Future<void> createTodo({required TodoEntity payload}) async {
+  Future<void> createTodo({
+    NotificationModel? noti,
+    required TodoEntity payload,
+  }) async {
     final current = state.value ?? [];
     final temp = payload.copyWith(id: -DateTime.now().microsecondsSinceEpoch);
     final updated = [temp, ...current];
     state = AsyncValue.data(updated);
 
     try {
-      final created = await repo.writeT(todo: payload.toTodoModel());
+      final created = await repo.writeT(
+        todo: payload.toTodoModel(),
+        noti: noti,
+      );
+
       final replaced = [
         for (final n in state.value!)
           if (n.id == temp.id) created else n,

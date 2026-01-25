@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:todo_notes/Data/Models/todoModel.dart';
 
 class TodoService {
@@ -20,14 +21,16 @@ class TodoService {
   }
 
   //get All Todos
-  Future<List<TodoModel>> getAllTodos() async {
+  Future<List<TodoReadModel>> getAllTodos() async {
     try {
       final response = await dio.get('/readtodos');
       if (response.statusCode == 200) {
         final data = response.data;
         if (data is List) {
+          
+
           return data
-              .map((e) => TodoModel.fromJson(e as Map<String, dynamic>))
+              .map((e) => TodoReadModel.fromJson(e as Map<String, dynamic>))
               .toList();
         } else {
           throw Exception('Invalid list JSON');

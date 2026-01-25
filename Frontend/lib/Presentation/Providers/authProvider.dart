@@ -6,7 +6,8 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       // Replace with your actual backend URL : https://todo-notes-app-backend-fastapi.onrender.com/
-      baseUrl: 'https://todo-notes-app-backend-fastapi.onrender.com/',
+      baseUrl:
+          'http://127.0.0.1:8000/', //'https://todo-notes-app-backend-fastapi.onrender.com/',
 
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),

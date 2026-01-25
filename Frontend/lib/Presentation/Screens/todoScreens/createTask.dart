@@ -69,7 +69,12 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
           debugPrint(notiData.pickedTimes.toString());
 
           Navigator.of(context).pop();
-          ref.read(todoNotifierProvider.notifier).createTodo(payload: todo);
+          ref
+              .read(todoNotifierProvider.notifier)
+              .createTodo(
+                payload: todo,
+                noti: notiData.toNotificationModel(type),
+              );
         }
 
         debugPrint(notiData.pickedDate.toString());
