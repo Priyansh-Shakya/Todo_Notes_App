@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
-
+from notifications.noti_model import NotificationRead
 
 ## Todo Models ----------------------------------------------------
 
@@ -12,6 +12,7 @@ class TodoBase(BaseModel):
 class ReadTodo(TodoBase):
     id:int
     created_at: datetime
+    notifications: list[NotificationRead] = []
 
 class WriteTodo(TodoBase):
     pass

@@ -6,7 +6,16 @@ from supabase_client import supabase_admin
 supabase: Client = supabase_admin
 
 async def read_all_todos(user):
-    response = supabase.table("todos").select("*").eq('user_id', user['id']).execute()
+    response = (
+    supabase
+    .table("todos")
+    .select("""
+        *,
+        notifications:notification_schedules(*)
+    """).eq('user_id', user['id'])
+    .execute()
+)
+
     return [ReadTodo(**row) for row in response.data]
 
 async def write_todo(todo: WriteTodo, user):
