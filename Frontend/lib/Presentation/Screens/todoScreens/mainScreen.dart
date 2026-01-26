@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
@@ -18,7 +17,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final todoAsync = ref.watch(todoReadNotifierProvider);
+    final todoAsync = ref.watch(todoNotifierProvider);
     final notifier = ref.read(todoNotifierProvider.notifier);
 
     todoAsync.whenOrNull(
@@ -46,11 +45,14 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
             final oneTodo = todo[index];
 
             final formatedCreatedAt = createdAtSliced(oneTodo.createdAt);
-            final notifications = oneTodo.notification;
+            final notifications = notifier.listNoti;
 
-            final NotificationModel? taskNoti = (notifications.isNotEmpty)
-                ? notifications.firstWhere((n) => n.isActive)
-                : null;
+            // final notiDataConverted = oneNotification.toNotificationData();
+            // final notifications = oneTodo.notification;
+            // final hasNoti = notifications != null && notifications.isNotEmpty;
+            // final NotificationModel? taskNoti = (hasNoti)
+            //     ? notifications.firstWhere((n) => n.isActive)
+            //     : null;
 
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
@@ -58,11 +60,10 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                 onTap: () {
                   showNotificationSheet(
                     context: context,
-                    notification: taskNoti,
+                    notifications: notifications,
                     todo: oneTodo,
                   );
                 },
-
                 child: Card(
                   elevation: 2,
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,

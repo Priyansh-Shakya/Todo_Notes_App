@@ -21,7 +21,7 @@ class TodoService {
   }
 
   //get All Todos
-  Future<List<TodoReadModel>> getAllTodos() async {
+  Future<List<TodoModel>> getAllTodos() async {
     try {
       final response = await dio.get('/readtodos');
       if (response.statusCode == 200) {
@@ -30,7 +30,7 @@ class TodoService {
           
 
           return data
-              .map((e) => TodoReadModel.fromJson(e as Map<String, dynamic>))
+              .map((e) => TodoModel.fromJson(e as Map<String, dynamic>))
               .toList();
         } else {
           throw Exception('Invalid list JSON');

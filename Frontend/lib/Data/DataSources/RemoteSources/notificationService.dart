@@ -21,4 +21,21 @@ class Notificationservice {
       throw Exception('Failed to send notification: ${response.statusCode}');
     }
   }
+
+  Future<List<NotificationModel>> getTaskNotification() async {
+    final response = await dio.get('/getnoti');
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      if (data is List) {
+        return data
+            .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw Exception('Invalid list JSON');
+      }
+    } else {
+      throw Exception('Failed to get notification: ${response.statusCode}');
+    }
+  }
 }

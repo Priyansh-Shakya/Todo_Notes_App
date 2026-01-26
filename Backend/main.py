@@ -3,8 +3,8 @@ from fastapi import FastAPI, Depends
 from fastapi import Query
 from auth import get_current_user
 import note_service
-from notifications.noti_model import NotificationOut, NotificationCreate
-from notifications.noti_service import set_notification
+from notifications.noti_model import NotificationCreate, NotificationRead
+from notifications.noti_service import get_notifications, set_notification
 import todo_service
 from models import ReadNote, UpdateNote, WriteNote, WriteTodo, ReadTodo, UpdateTodo
 from auth import get_current_user
@@ -88,6 +88,10 @@ async def delete_notes(ids: List[int] = Query(...), user = Depends(get_current_u
 
 
 ###### ========================= Notification Routes ================================================
-@app.post('/setnoti', response_model= NotificationOut)
+@app.post('/setnoti', response_model=NotificationRead)
 async def create_noti(noti: NotificationCreate):
     return await set_notification(noti)
+
+@app.get("/getnoti", response_model=list[NotificationRead])
+async def get_noti(user = Depends(get_current_user)):
+    return await get_notifications(user)

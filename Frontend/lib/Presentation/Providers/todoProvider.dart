@@ -43,12 +43,7 @@ final noteRepoProvider = Provider<NoteRepo>((ref) {
 final noteNotifierProvider =
     AsyncNotifierProvider<NoteNotifier, List<NoteEntity>>(NoteNotifier.new);
 
-//--------------- non read provider-----------------------
+
 final todoNotifierProvider =
     AsyncNotifierProvider<TodoNotifier, List<TodoEntity>>(TodoNotifier.new);
 
-//------------------- read provider--------------------------
-final todoReadNotifierProvider =
-    AsyncNotifierProvider<TodoReadNotifier, List<TodoReadEntity>>(
-      TodoReadNotifier.new,
-    );

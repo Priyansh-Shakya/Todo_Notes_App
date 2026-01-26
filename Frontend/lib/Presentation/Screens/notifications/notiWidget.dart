@@ -91,13 +91,17 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               if (_selectedType == NotificationType.dateBased)
                 ElevatedButton.icon(
                   onPressed: () async {
-                    widget.notiData.pickedDate = await pickDate(context);
+                    final date = await pickDate(context);
+                    if (date != null) {
+                      widget.notiData.pickedDate = date.toIso8601String();
+                    }
+
                     setState(() {});
                   },
                   icon: const Icon(Icons.calendar_today),
                   label: Text(
                     widget.notiData.pickedDate != null
-                        ? "${widget.notiData.pickedDate!.day}/${widget.notiData.pickedDate!.month}/${widget.notiData.pickedDate!.year}"
+                        ? widget.notiData.pickedDate!
                         : "Select Date",
                   ),
                 ),
@@ -124,7 +128,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     initialTime: TimeOfDay.now(),
                   );
                   if (time != null) {
-                    widget.notiData.pickedTimes.add(time);
+                    final strTime = time.toString();
+                    widget.notiData.pickedTimes.add(strTime);
                     setState(() {});
                   }
                 },
@@ -139,7 +144,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     spacing: 8,
                     children: widget.notiData.pickedTimes.map((time) {
                       return Chip(
-                        label: Text(time.format(context)),
+                        label: Text(time),
                         onDeleted: () {
                           setState(
                             () => widget.notiData.pickedTimes.remove(time),

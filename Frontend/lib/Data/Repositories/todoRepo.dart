@@ -9,10 +9,10 @@ class TodoRepo {
   final Notificationservice notification;
   TodoRepo({required this.api, required this.notification});
 
-  Future<List<TodoReadEntity>> getAll() async {
+  Future<List<TodoEntity>> getAll() async {
     // Add local OR remote logic above
     final model = await api.getAllTodos();
-    return model.map((e) => e.toTodoReadEntity()).toList();
+    return model.map((e) => e.toTodoEntity()).toList();
   }
 
   Future<TodoEntity> writeT({

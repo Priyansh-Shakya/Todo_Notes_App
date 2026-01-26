@@ -117,8 +117,8 @@ Widget showCard(String label, Widget trailing) {
 
 void showNotificationSheet({
   required BuildContext context,
-  required TodoReadEntity todo,
-  required NotificationModel? notification,
+  required TodoEntity todo,
+  required List<NotificationModel>? notifications,
 }) {
   const List<String> weekDayNames = [
     'Sun',
@@ -129,6 +129,15 @@ void showNotificationSheet({
     'Fri',
     'Sat',
   ];
+
+  NotificationModel? notification;
+  if (notifications != null && notifications.isNotEmpty) {
+    try {
+      notification = notifications.firstWhere((e) => e.taskId == todo.id);
+    } catch (e) {
+      notification = null; // no match, safe fallback
+    }
+  }
 
   bool isNotiOn = notification != null;
 

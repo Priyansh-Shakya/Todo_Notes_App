@@ -1,3 +1,5 @@
+import 'package:todo_notes/Presentation/Screens/notifications/notiData.dart';
+
 class NotificationModel {
   int? taskId;
   final String scheduleType; // "date" or "weekly"
@@ -53,6 +55,14 @@ class NotificationModel {
     return data;
   }
 
+  NotificationData toNotificationData() {
+    return NotificationData(
+      pickedDate: scheduledDate,
+      selectedDays: weekdays?.toSet(),
+      pickedTimes: times,
+    );
+  }
+
   NotificationModel copyWith({
     int? taskId,
     String? scheduleType,
@@ -71,5 +81,10 @@ class NotificationModel {
       scheduledDate: scheduledDate ?? this.scheduledDate,
       weekdays: weekdays ?? this.weekdays,
     );
+  }
+
+  @override
+  String toString() {
+    return 'NotificationModel(taskId: $taskId, scheduleType: $scheduleType, times: $times, timezone: $timezone, isActive: $isActive, scheduledDate: $scheduledDate, weekdays: $weekdays)';
   }
 }

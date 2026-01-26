@@ -4,14 +4,14 @@ import 'package:todo_notes/Data/Models/notiModel.dart';
 enum NotificationType { dateBased, weekly }
 
 class NotificationData {
-  DateTime? pickedDate;
+  String? pickedDate;
   final Set<int> selectedDays;
-  final List<TimeOfDay> pickedTimes;
+  final List<String> pickedTimes;
 
   NotificationData({
     this.pickedDate,
     Set<int>? selectedDays,
-    List<TimeOfDay>? pickedTimes,
+    List<String>? pickedTimes,
   }) : selectedDays = selectedDays ?? {},
        pickedTimes = pickedTimes ?? [];
 
@@ -22,11 +22,9 @@ class NotificationData {
 
     return NotificationModel(
       scheduleType: type == NotificationType.dateBased ? 'date' : 'weekly',
-      scheduledDate: type == NotificationType.dateBased
-          ? pickedDate!.toIso8601String()
-          : null,
+      scheduledDate: type == NotificationType.dateBased ? pickedDate! : null,
       weekdays: type == NotificationType.weekly ? selectedDays.toList() : null,
-      times: pickedTimes.map(_formatTime).toList(),
+      times: pickedTimes,
       timezone: DateTime.now().timeZoneName,
       isActive: true,
     );

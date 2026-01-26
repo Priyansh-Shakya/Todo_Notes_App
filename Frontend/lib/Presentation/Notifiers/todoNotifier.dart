@@ -5,37 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Data/Repositories/todoRepo.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
+import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
-
-//--------- only read----------------------------------------------
-
-class TodoReadNotifier extends AsyncNotifier<List<TodoReadEntity>> {
-  late final TodoRepo repo;
-
-  @override
-  FutureOr<List<TodoReadEntity>> build() async {
-    repo = ref.watch(todoRepoProvider);
-    final todo = await repo.getAll();
-    
-    return todo;
-  }
-
-  Future<void> refreshReadTodo() async {
-    state = AsyncLoading();
-    state = await AsyncValue.guard(() => repo.getAll());
-  }
-}
-
-//----------- create , update , delete --------------------------------
 
 class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
   late final TodoRepo repo;
-
+  List<NotificationModel> listNoti = [];
   @override
   FutureOr<List<TodoEntity>> build() async {
     repo = ref.watch(todoRepoProvider);
+    final todo = await repo.getAll();
+    // get notifications
+    listNoti = await ref
+        .read(notificationNotifierProvider.notifier)
+        .preFetchNotifications();
 
-    return [];
+    debugPrint(listNoti.toString());
+
+    return todo;
   }
 
   Future<void> createTodo({
