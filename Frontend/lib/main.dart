@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppTheme/appTheme.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
@@ -14,6 +15,11 @@ void main() async {
     debugPrint(details.exceptionAsString());
     debugPrint(details.stack.toString());
   };
+
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top],
+  );
   runApp(ProviderScope(child: Bootstrap()));
 }
 

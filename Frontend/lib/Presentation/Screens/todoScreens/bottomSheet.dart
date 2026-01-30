@@ -69,7 +69,7 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Task Notification',
+                  'Task Details',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
@@ -87,23 +87,26 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
                         ),
                         showCard("Created At", Text(date), context),
 
-                        showCard(
-                          "Notifications",
-                          Switch(
-                            value: isActiveNoti,
-                            focusColor: Colors.green,
-                            inactiveThumbColor: Colors.red,
-                            activeTrackColor: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerLow,
-                            activeThumbColor: Colors.green,
-                            onChanged: (val) {
-                              setState(() {
-                                isActiveNoti = val;
-                              });
-                            },
+                        SizedBox(
+                          height: 70,
+                          child: showCard(
+                            "Notifications",
+                            Switch(
+                              value: isActiveNoti,
+                              focusColor: Colors.green,
+                              inactiveThumbColor: Colors.red,
+                              activeTrackColor: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerLow,
+                              activeThumbColor: Colors.green,
+                              onChanged: (val) {
+                                setState(() {
+                                  isActiveNoti = val;
+                                });
+                              },
+                            ),
+                            context,
                           ),
-                          context,
                         ),
 
                         if (isNotiOn)

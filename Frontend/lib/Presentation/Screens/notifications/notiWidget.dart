@@ -119,6 +119,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 ),
 
               const SizedBox(height: 20),
+              // Time Picker ---------------------
               ElevatedButton.icon(
                 onPressed: () async {
                   final time = await showTimePicker(
@@ -144,16 +145,22 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   padding: const EdgeInsets.only(top: 12),
                   child: Wrap(
                     spacing: 8,
-                    children: widget.notiData.displayTimes.map((time) {
-                      return Chip(
-                        label: Text(time),
-                        onDeleted: () {
-                          setState(
-                            () => widget.notiData.pickedTimes.remove(time),
-                          );
-                        },
-                      );
-                    }).toList(),
+                    children: List.generate(
+                      widget.notiData.displayTimes.length,
+                      (index) {
+                        final time = widget.notiData.displayTimes[index];
+
+                        return Chip(
+                          label: Text(time),
+                          onDeleted: () {
+                            setState(() {
+                              widget.notiData.displayTimes.removeAt(index);
+                              widget.notiData.pickedTimes.removeAt(index);
+                            });
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
             ],

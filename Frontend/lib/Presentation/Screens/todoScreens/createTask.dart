@@ -33,7 +33,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
 
   @override
   Widget build(BuildContext context) {
-    final type = ref.read(weeklyNoti.notifier).state;
+    final type = ref.watch(weeklyNoti);
 
     void saveTaskAndNoti() {
       final todo = TodoEntity(
@@ -110,17 +110,25 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
               SizedBox(height: 18),
               Text("Task", style: Theme.of(context).textTheme.headlineMedium),
               SizedBox(height: 10),
-              TextField(
-                controller: taskCtr,
-                maxLines: null,
-                minLines: 1,
-                style: Theme.of(context).textTheme.bodyMedium,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
+
+              // To prevent keyboard from reappearing again and again.
+              TapRegion(
+                onTapOutside: (_) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                child: TextField(
+                  controller: taskCtr,
+                  maxLines: null,
+                  minLines: 1,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
                   ),
                 ),
               ),
+
               SizedBox(height: 35),
               Container(
                 decoration: BoxDecoration(
