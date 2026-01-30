@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Repositories/noteRepo.dart';
 import 'package:todo_notes/Domain/Entities/noteEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
 class NoteNotifier extends AsyncNotifier<List<NoteEntity>> {
-  late final NoteRepo repo;
+  NoteRepo get repo => ref.watch(noteRepoProvider);
 
   @override
   FutureOr<List<NoteEntity>> build() async {
-    repo = ref.watch(noteRepoProvider);
+    final userId = ref.watch(userProvider.select((u) => u?.id));
+    if (userId == null) {
+      return const [];
+    }
     final note = await repo.getAll();
 
     return sortNotes(note);
@@ -26,6 +30,10 @@ class NoteNotifier extends AsyncNotifier<List<NoteEntity>> {
   Future<void> refreshList() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async => await repo.getAll());
+  }
+
+  void clear() {
+    state = const AsyncValue.data([]);
   }
 
   Future<void> writeNote({required NoteEntity note}) async {

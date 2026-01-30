@@ -10,5 +10,5 @@ abstract class AuthenticationRepo {
 
   Stream<AuthState> getAuthState();
 
-  Session? get currentSession;
+  Stream<Session?> get currentSession;
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Presentation/Screens/notifications/notiData.dart';
 import 'package:todo_notes/Presentation/Screens/notifications/notiStateProviders.dart';
 import 'package:todo_notes/Presentation/Screens/notifications/utils.dart';
+import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   final NotificationData notiData;
@@ -13,8 +14,6 @@ class NotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
-  NotificationType _selectedType = NotificationType.weekly;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -28,6 +27,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   // ---------------- CARD 1 ----------------
   Widget _typeSelectionCard() {
+    final selectedType = ref.watch(weeklyNoti);
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -37,38 +38,34 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             title: const Text('Date-Based'),
             subtitle: const Text('Receive notifications on specific dates'),
             value: NotificationType.dateBased,
-            groupValue: _selectedType,
+            groupValue: selectedType,
             onChanged: (value) {
-              setState(() {
-                _selectedType = value!;
-                ref.read(weeklyNoti.notifier).state = value;
+              if (value == null) return;
 
-                if (_selectedType == NotificationType.weekly) {
-                  // clear date-based data
-                  widget.notiData.pickedDate = null;
-                } else {
-                  // clear weekly data
-                  widget.notiData.selectedDays.clear();
-                }
+              ref.read(weeklyNoti.notifier).state = value;
 
-                // optional: also clear time if your UX demands it
-                // widget.notiData.pickedTimes.clear();
-              });
+              debugPrint("Changed to: $value");
+
+              if (value == NotificationType.weekly) {
+                widget.notiData.pickedDate = null;
+              } else {
+                widget.notiData.selectedDays.clear();
+              }
             },
           ),
+
           const Divider(),
+
           RadioListTile<NotificationType>(
             title: const Text('Weekly'),
             subtitle: const Text('Receive notifications every week'),
             value: NotificationType.weekly,
-            groupValue: _selectedType,
+            groupValue: selectedType,
             onChanged: (value) {
-              setState(() {
-                _selectedType = value!;
-                ref.read(weeklyNoti.notifier).state = value;
-                debugPrint("Selected Type: $_selectedType");
-                debugPrint("Provider Type: ${ref.watch(weeklyNoti)}");
-              });
+              if (value == null) return;
+
+              ref.read(weeklyNoti.notifier).state = value;
+              debugPrint("Changed to: $value");
             },
           ),
         ],
@@ -78,17 +75,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   // ---------------- CARD 2 ----------------
   Widget _configPanel(BuildContext context) {
+    NotificationType selectedType = ref.watch(weeklyNoti);
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       child: Card(
-        key: ValueKey(_selectedType),
+        key: ValueKey(selectedType),
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              if (_selectedType == NotificationType.dateBased)
+              if (selectedType == NotificationType.dateBased)
                 ElevatedButton.icon(
                   onPressed: () async {
                     final date = await pickDate(context);
@@ -101,12 +99,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   icon: const Icon(Icons.calendar_today),
                   label: Text(
                     widget.notiData.pickedDate != null
-                        ? widget.notiData.pickedDate!
+                        ? createdAtSliced(widget.notiData.pickedDate!)
                         : "Select Date",
                   ),
                 ),
 
-              if (_selectedType == NotificationType.weekly)
+              if (selectedType == NotificationType.weekly)
                 WeekDaySelector(
                   selectedDays: widget.notiData.selectedDays,
                   onDayToggle: (day) {
@@ -128,8 +126,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     initialTime: TimeOfDay.now(),
                   );
                   if (time != null) {
-                    final strTime = time.toString();
-                    widget.notiData.pickedTimes.add(strTime);
+                    final apiTime = timeOfDayToApi(time); // "18:25"
+                    final disTime = formatTimeOfDayAmPm(time); // "6:25 PM"
+
+                    widget.notiData.pickedTimes.add(apiTime); // backend-safe
+                    widget.notiData.displayTimes.add(disTime); // UI-only
+
                     setState(() {});
                   }
                 },
@@ -137,12 +139,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 label: const Text('Select Time'),
               ),
 
-              if (widget.notiData.pickedTimes.isNotEmpty)
+              if (widget.notiData.displayTimes.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Wrap(
                     spacing: 8,
-                    children: widget.notiData.pickedTimes.map((time) {
+                    children: widget.notiData.displayTimes.map((time) {
                       return Chip(
                         label: Text(time),
                         onDeleted: () {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
+import 'package:todo_notes/Presentation/Screens/todoScreens/bottomSheet.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/createTask.dart';
 
 class MainTodoScreen extends ConsumerStatefulWidget {
@@ -44,25 +45,11 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
           itemBuilder: (context, index) {
             final oneTodo = todo[index];
 
-            final formatedCreatedAt = createdAtSliced(oneTodo.createdAt);
-            final notifications = notifier.listNoti;
-
-            // final notiDataConverted = oneNotification.toNotificationData();
-            // final notifications = oneTodo.notification;
-            // final hasNoti = notifications != null && notifications.isNotEmpty;
-            // final NotificationModel? taskNoti = (hasNoti)
-            //     ? notifications.firstWhere((n) => n.isActive)
-            //     : null;
-
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               child: GestureDetector(
                 onTap: () {
-                  showNotificationSheet(
-                    context: context,
-                    notifications: notifications,
-                    todo: oneTodo,
-                  );
+                  showTodoBottomSheet(todo: oneTodo, context: context);
                 },
                 child: Card(
                   elevation: 2,
@@ -100,10 +87,13 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                             value: oneTodo.isComplete,
                             onChanged: (bool? newVal) async {
                               final updateTodo = TodoEntity(
+                                id: oneTodo.id,
                                 task: oneTodo.task,
                                 isComplete: newVal ?? false,
                               );
-
+                              debugPrint(
+                                "Update Todo main screen : ID${oneTodo.id} ${updateTodo.task} , ${updateTodo.isComplete}",
+                              );
                               await notifier.updateTodo(
                                 id: oneTodo.id!,
                                 todo: updateTodo,

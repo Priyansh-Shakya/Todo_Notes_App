@@ -23,19 +23,24 @@ class Notificationservice {
   }
 
   Future<List<NotificationModel>> getTaskNotification() async {
-    final response = await dio.get('/getnoti');
+    try {
+      final response = await dio.get('/getnoti');
 
-    if (response.statusCode == 200) {
       final data = response.data;
       if (data is List) {
         return data
             .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
             .toList();
-      } else {
-        throw Exception('Invalid list JSON');
       }
-    } else {
-      throw Exception('Failed to get notification: ${response.statusCode}');
+
+      return []; // safety
+    } on DioException catch (e) {
+      // ✅ THIS is the important part
+      if (e.response?.statusCode == 404 || e.response?.statusCode == 204) {
+        return [];
+      }
+
+      rethrow; // real error → propagate
     }
   }
 }

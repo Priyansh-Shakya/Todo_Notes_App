@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Core/ENV/env.dart';
@@ -7,14 +6,6 @@ import 'package:todo_notes/Supabase_Auth/Logic/authRepo.dart';
 import 'package:todo_notes/Supabase_Auth/Mock_Test/mock_auth_repo.dart';
 
 import 'abstractRepo.dart';
-
-final tokenProvider = Provider<String?>((ref) {
-  final authRepo = ref.read(authRepoProvider);
-  final token = authRepo.currentSession?.accessToken;
-
-  debugPrint('Token: $token');
-  return token;
-});
 
 // final dioProvider = Provider<Dio>((ref) {
 //   final dio = Dio(
@@ -47,6 +38,11 @@ final tokenProvider = Provider<String?>((ref) {
 //   return dio;
 // });
 
+final tokenProvider = Provider<String?>((ref) {
+  final session = ref.watch(authNotifierProvider).value;
+  return session?.accessToken;
+});
+
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
 });
@@ -65,3 +61,8 @@ final authRepoProvider = Provider<AuthenticationRepo>((ref) {
 final authNotifierProvider = AsyncNotifierProvider<AuthNotifier, Session?>(
   AuthNotifier.new,
 );
+
+final userProvider = Provider<User?>((ref) {
+  final session = ref.watch(authNotifierProvider).value;
+  return session?.user;
+});

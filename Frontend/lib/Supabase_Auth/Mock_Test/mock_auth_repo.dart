@@ -5,12 +5,13 @@ import 'package:todo_notes/Supabase_Auth/Logic/abstractRepo.dart';
 
 class MockAuthRepo implements AuthenticationRepo {
   final _controller = StreamController<AuthState>.broadcast();
+  final _sessionController = StreamController<Session?>.broadcast();
 
   final Map<String, String> _users = {}; // email → password
   Session? _session;
 
   @override
-  Session? get currentSession => _session;
+  Stream<Session?> get currentSession => _sessionController.stream;
 
   // -------------------------------
   // Auth State Stream
@@ -32,6 +33,7 @@ class MockAuthRepo implements AuthenticationRepo {
     _session = _createSession(data.email);
 
     _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
+    _sessionController.add(_session);
 
     return _session!.user;
   }
@@ -52,6 +54,7 @@ class MockAuthRepo implements AuthenticationRepo {
     _session = _createSession(data.email);
 
     _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
+    _sessionController.add(_session);
 
     return _session!.user;
   }
@@ -68,6 +71,7 @@ class MockAuthRepo implements AuthenticationRepo {
     _session = _createSession(email);
 
     _controller.add(AuthState(AuthChangeEvent.signedIn, _session));
+    _sessionController.add(_session);
   }
 
   // -------------------------------
@@ -78,6 +82,7 @@ class MockAuthRepo implements AuthenticationRepo {
     _session = null;
 
     _controller.add(const AuthState(AuthChangeEvent.signedOut, null));
+    _sessionController.add(null);
   }
 
   // -------------------------------
@@ -100,5 +105,6 @@ class MockAuthRepo implements AuthenticationRepo {
 
   void dispose() {
     _controller.close();
+    _sessionController.close();
   }
 }

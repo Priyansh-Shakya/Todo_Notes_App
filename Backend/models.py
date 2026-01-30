@@ -12,7 +12,7 @@ class TodoBase(BaseModel):
 class ReadTodo(TodoBase):
     id:int
     created_at: datetime
-    notifications: list[NotificationRead] = []
+    
 
 class WriteTodo(TodoBase):
     pass

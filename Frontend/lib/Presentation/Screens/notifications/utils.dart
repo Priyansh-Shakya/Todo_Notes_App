@@ -74,3 +74,22 @@ class WeekDaySelector extends StatelessWidget {
     );
   }
 }
+
+String timeOfDayToApi(TimeOfDay t) {
+  final h = t.hour.toString().padLeft(2, '0');
+  final m = t.minute.toString().padLeft(2, '0');
+  return '$h:$m'; // ✅ 24-hour, backend-safe
+}
+
+
+
+String formatTimeOfDayAmPm(TimeOfDay t) {
+  final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+  final minute = t.minute.toString().padLeft(2, '0');
+  final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+  return '$hour:$minute $period';
+}
+
+
+
+

@@ -33,7 +33,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
 
   @override
   Widget build(BuildContext context) {
-    final type = ref.watch(weeklyNoti);
+    final type = ref.read(weeklyNoti.notifier).state;
 
     void saveTaskAndNoti() {
       final todo = TodoEntity(
@@ -45,6 +45,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
       print("Task : ${taskCtr.text}");
 
       final ready = notiData.isReady(type);
+      debugPrint("Create task notification type:$type");
       if (isNotiOn) {
         if (!ready) {
           if (type == NotificationType.weekly) {

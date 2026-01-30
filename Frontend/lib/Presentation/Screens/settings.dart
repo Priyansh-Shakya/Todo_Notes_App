@@ -58,24 +58,22 @@ class Settings extends ConsumerWidget {
           ),
           SizedBox(height: 50),
           Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.all(Radius.circular(16)),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    
-                    
-                  ],
-                ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [],
               ),
             ),
+          ),
           OutlinedButton(
             onPressed: () {
               ref.read(authNotifierProvider.notifier).signOut();
+              //ref.invalidate(authNotifierProvider);
             },
             child: Text("Log-Out", style: TextStyle(color: Colors.red)),
           ),

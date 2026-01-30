@@ -2,26 +2,40 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_notes/Presentation/Providers/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/abstractRepo.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
 class AuthNotifier extends AsyncNotifier<Session?> {
-  late final AuthenticationRepo repo;
+  AuthenticationRepo get repo => ref.watch(authRepoProvider);
   StreamSubscription<AuthState>? sub;
 
   String? formError;
 
   @override
   Future<Session?> build() async {
-    repo = ref.read(authRepoProvider);
+    final repo = ref.watch(authRepoProvider);
 
-    sub = repo.getAuthState().listen((authState) {
-      state = AsyncValue.data(authState.session);
+    // Listen to auth changes and PUSH them
+    sub = repo.getAuthState().listen(
+      (authState) {
+        state = AsyncValue.data(authState.session);
+        ref.invalidate(tokenProvider);
+        ref.invalidate(dioProvider);
+        ref.invalidate(userProvider);
+      },
+      onError: (e, st) {
+        state = AsyncValue.error(e, st);
+      },
+    );
+
+    ref.onDispose(() {
+      sub?.cancel();
     });
 
-    ref.onDispose(() => sub?.cancel());
-
-    return repo.currentSession;
+    // 👇 IMPORTANT: return the CURRENT session only
+    //earlier => return repocurrentSession;
+    return repo.currentSession.first;
   }
 
   Future<void> signUpWithEmail(AuthData data) async {
@@ -65,5 +79,9 @@ class AuthNotifier extends AsyncNotifier<Session?> {
   Future<void> signOut() async {
     await repo.signOut();
     // listener will emit null session
+  }
+
+  Stream<AuthState> authStateChange() {
+    return repo.getAuthState();
   }
 }

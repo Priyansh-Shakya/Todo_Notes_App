@@ -11,15 +11,18 @@ class AuthGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
+
     return Scaffold(
       body: authState.when(
         data: (session) {
-          if (session == null) return AuthScreen();
-          return MainScreen();
+          if (session == null) {
+            return const AuthScreen();
+          } else {
+            return const MainScreen();
+          }
         },
-        loading: () =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (e, _) => Scaffold(body: Center(child: Text('Auth error: $e'))),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Auth error: $e')),
       ),
     );
   }

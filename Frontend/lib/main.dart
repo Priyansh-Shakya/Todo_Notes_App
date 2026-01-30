@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppTheme/appTheme.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
+import 'package:todo_notes/Core/bootStrapMainApp.dart';
 import 'package:todo_notes/Supabase_Auth/Helpers/initilizeSupabase.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authGate.dart';
 
@@ -9,7 +10,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initSupabase();
-  runApp(ProviderScope(child: MyApp()));
+  FlutterError.onError = (details) {
+    debugPrint(details.exceptionAsString());
+    debugPrint(details.stack.toString());
+  };
+  runApp(ProviderScope(child: Bootstrap()));
 }
 
 class MyApp extends ConsumerWidget {

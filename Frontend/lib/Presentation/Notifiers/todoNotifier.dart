@@ -7,46 +7,69 @@ import 'package:todo_notes/Data/Repositories/todoRepo.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
 class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
-  late final TodoRepo repo;
-  List<NotificationModel> listNoti = [];
+  TodoRepo get repo => ref.watch(todoRepoProvider);
+
   @override
-  FutureOr<List<TodoEntity>> build() async {
-    repo = ref.watch(todoRepoProvider);
-    final todo = await repo.getAll();
-    // get notifications
-    listNoti = await ref
+  Future<List<TodoEntity>> build() async {
+    final user = ref.watch(userProvider);
+
+    // 👇 HARD EXIT, zero side effects
+    if (user == null) {
+      return const [];
+    }
+
+    final repo = ref.watch(todoRepoProvider);
+
+    // optional: only for authenticated users
+    await ref
         .read(notificationNotifierProvider.notifier)
         .preFetchNotifications();
 
-    debugPrint(listNoti.toString());
+    return repo.getAll();
+  }
 
-    return todo;
+  Future<void> refreshList() async {
+    state = AsyncLoading();
+    state = await AsyncValue.guard(() => repo.getAll());
+  }
+
+  void clear() {
+    state = const AsyncValue.data([]);
   }
 
   Future<void> createTodo({
     NotificationModel? noti,
     required TodoEntity payload,
   }) async {
-    final current = state.value ?? [];
-    final temp = payload.copyWith(id: -DateTime.now().microsecondsSinceEpoch);
-    final updated = [temp, ...current];
-    state = AsyncValue.data(updated);
+    final prev = state.value ?? [];
+
+    final tempId = -DateTime.now().microsecondsSinceEpoch;
+    final tempTodo = payload.copyWith(id: tempId);
+
+    // 1️⃣ optimistic todo
+    state = AsyncValue.data([tempTodo, ...prev]);
 
     try {
-      final created = await repo.writeT(
-        todo: payload.toTodoModel(),
-        noti: noti,
-      );
+      final created = await repo.writeT(todo: payload.toTodoModel());
 
-      final replaced = [
-        for (final n in state.value!)
-          if (n.id == temp.id) created else n,
-      ];
-      state = AsyncValue.data(replaced);
-    } catch (err, st) {
-      state = AsyncError(err, st);
+      // 3️⃣ replace todo
+      state = AsyncValue.data([
+        for (final t in state.value!)
+          if (t.id == tempId) created else t,
+      ]);
+
+      // 2️⃣ optimistic notification
+      if (noti != null) {
+        ref
+            .read(notificationNotifierProvider.notifier)
+            .addLocal(noti.copyWith(taskId: created.id));
+      }
+    } catch (_) {
+      // rollback everything
+      state = AsyncValue.data(prev);
     }
   }
 
@@ -54,6 +77,8 @@ class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
     final prev = state.value;
     if (prev == null) return;
     final temp = prev.map((e) => e.id == id ? todo : e).toList();
+    debugPrint("Update Temp: $temp");
+    debugPrint("Update Todo: $todo");
     state = AsyncValue.data(temp);
 
     try {

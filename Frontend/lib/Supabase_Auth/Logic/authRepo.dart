@@ -49,5 +49,7 @@ class AuthRepo implements AuthenticationRepo {
   }
 
   @override
-  Session? get currentSession => client.auth.currentSession;
+  Stream<Session?> get currentSession =>
+      Supabase.instance.client.auth.onAuthStateChange
+          .map((event) => event.session);
 }

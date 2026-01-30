@@ -31,8 +31,8 @@ final notiServiceProvider = Provider<Notificationservice>((ref) {
 
 final todoRepoProvider = Provider<TodoRepo>((ref) {
   final api = ref.watch(todoServiceProvider);
-  final notification = ref.watch(notiServiceProvider);
-  return TodoRepo(api: api, notification: notification);
+
+  return TodoRepo(api: api);
 });
 
 final noteRepoProvider = Provider<NoteRepo>((ref) {
@@ -43,7 +43,5 @@ final noteRepoProvider = Provider<NoteRepo>((ref) {
 final noteNotifierProvider =
     AsyncNotifierProvider<NoteNotifier, List<NoteEntity>>(NoteNotifier.new);
 
-
 final todoNotifierProvider =
     AsyncNotifierProvider<TodoNotifier, List<TodoEntity>>(TodoNotifier.new);
-
