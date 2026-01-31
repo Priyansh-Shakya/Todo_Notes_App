@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Core/Helpers/sharedPref.dart';
 
 Future<bool?> showDeleteDialog(BuildContext context) {
@@ -10,7 +11,10 @@ Future<bool?> showDeleteDialog(BuildContext context) {
         content: Text("Are you sure you want to delete this task?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true), // close dialog
+            onPressed: () {
+              Soundmanager.playDeleteSound();
+              Navigator.of(context).pop(true);
+            }, // close dialog
 
             child: Text("Yes", style: Theme.of(context).textTheme.bodySmall),
           ),

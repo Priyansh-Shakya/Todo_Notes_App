@@ -12,4 +12,12 @@ class Soundmanager {
   static Future<void> playNavSound() async {
     await player.play(AssetSource('sounds/botto_nav.mp3'));
   }
+
+  static Future<void> playDeleteSound() async {
+    await player.play(AssetSource('sounds/woosh_delete.mp3'));
+  }
+
+  static Future<void> playPopUpSound() async {
+    await player.play(AssetSource('sounds/new_pop.mp3'));
+  }
 }

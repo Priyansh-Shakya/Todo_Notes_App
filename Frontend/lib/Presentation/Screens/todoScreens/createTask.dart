@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/notifications/notiData.dart';
@@ -36,6 +37,12 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
     final type = ref.watch(weeklyNoti);
 
     void saveTaskAndNoti() {
+      if (taskCtr.text.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Please write a Task")));
+        return;
+      }
       final todo = TodoEntity(
         task: taskCtr.text,
         createdAt: DateTime.now.toString(),
@@ -65,6 +72,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
           }
         }
         if (ready) {
+          Soundmanager.playPopUpSound();
           debugPrint(notiData.pickedDate.toString());
           debugPrint(notiData.selectedDays.toString());
           debugPrint(notiData.pickedTimes.toString());
@@ -85,6 +93,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
         debugPrint(notiData.pickedTimes.toString());
       }
       if (!isNotiOn) {
+        Soundmanager.playPopUpSound();
         Navigator.of(context).pop();
         ref.read(todoNotifierProvider.notifier).createTodo(payload: todo);
       }

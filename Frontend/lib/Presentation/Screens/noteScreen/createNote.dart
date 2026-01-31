@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Domain/Entities/noteEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 
@@ -16,6 +17,14 @@ class _CreateNoteState extends ConsumerState<CreateNote> {
   bool isPinned = false;
 
   Future<void> createNote() async {
+    if (titleCtr.text.isEmpty || contentCtr.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please write title and content before saving note."),
+        ),
+      );
+      return;
+    }
     // 1) Build a NoteEntity — UI is allowed to create domain entities
     final note = NoteEntity(
       id: 0, // or nothing if optional
@@ -24,6 +33,8 @@ class _CreateNoteState extends ConsumerState<CreateNote> {
       pinned: isPinned,
       createdAt: DateTime.now().toString(),
     );
+
+    Soundmanager.playPopUpSound();
 
     // 2) Call notifier (business logic)
     await ref.read(noteNotifierProvider.notifier).writeNote(note: note);

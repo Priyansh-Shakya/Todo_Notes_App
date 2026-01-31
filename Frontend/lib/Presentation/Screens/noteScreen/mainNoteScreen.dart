@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Presentation/Providers/noteStateProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/noteScreen/createNote.dart';
@@ -50,6 +51,7 @@ class MainNoteScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () async {
+                await Soundmanager.playDeleteSound();
                 await ref
                     .read(noteNotifierProvider.notifier)
                     .deleteNote(ids: selectedIds.toList());
@@ -65,7 +67,28 @@ class MainNoteScreen extends ConsumerWidget {
         error: (e, st) => Center(child: Text('Error: $e')),
         data: (notes) {
           if (notes.isEmpty) {
-            return const Center(child: Text("No Notes yet, create new"));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.sticky_note_2_outlined,
+                    size: 96,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withAlpha(68),
+                  ),
+                  Text(
+                    "No Notes yet, create new",
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withAlpha(200),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return GridView.builder(
@@ -175,10 +198,13 @@ class MainNoteScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add, size: 30, color: Colors.blue),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => CreateNote()),
-        ),
+        onPressed: () {
+          Soundmanager.playPopUpSound();
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CreateNote()),
+          );
+        },
       ),
     );
   }

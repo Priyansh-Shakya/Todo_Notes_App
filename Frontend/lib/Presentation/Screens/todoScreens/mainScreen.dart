@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
@@ -36,7 +37,28 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
     final Widget todos = todoAsync.when(
       data: (todo) {
         if (todo.isEmpty) {
-          return const Center(child: Text("No Task yet, create new"));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.event_note_outlined,
+                  size: 96,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withAlpha(68),
+                ),
+                Text(
+                  "No Notes yet, create new",
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withAlpha(200),
+                  ),
+                ),
+              ],
+            ),
+          );
         }
 
         return ListView.builder(
@@ -85,7 +107,8 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                               0xff39ff40,
                             ), // ✅ tick mark color ),
                             value: oneTodo.isComplete,
-                            onChanged: (bool? newVal) async {
+                            onChanged: (bool? newVal) {
+                              Soundmanager.playPopUpSound();
                               final updateTodo = TodoEntity(
                                 id: oneTodo.id,
                                 task: oneTodo.task,
@@ -94,7 +117,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                               debugPrint(
                                 "Update Todo main screen : ID${oneTodo.id} ${updateTodo.task} , ${updateTodo.isComplete}",
                               );
-                              await notifier.updateTodo(
+                              notifier.updateTodo(
                                 id: oneTodo.id!,
                                 todo: updateTodo,
                               );
@@ -137,6 +160,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, size: 30, color: Colors.blue),
         onPressed: () {
+          Soundmanager.playPopUpSound();
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => CreateTask()));

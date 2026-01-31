@@ -61,7 +61,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/app_logo.png"
+  image_path: "assets/app_logo_cropped.png"
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -75,6 +75,9 @@ flutter:
      - assets/images/google_logo.png
      - assets/sounds/botto_nav.mp3
      - assets/sounds/notification.mp3
+     - assets/sounds/woosh_delete.mp3  #delete
+     - assets/sounds/new_pop.mp3
+     
      
 
   # An image asset can refer to one or more resolution-specific "variants", see
