@@ -1,4 +1,3 @@
-import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Data/Models/todoModel.dart';
 
 class TodoEntity {
