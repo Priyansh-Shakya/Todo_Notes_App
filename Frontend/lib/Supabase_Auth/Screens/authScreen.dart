@@ -54,19 +54,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           }
 
           // ---- LOGIN / SIGNUP UI -----
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
-                children: [
-                  _buildAuthCard(context),
-                  const SizedBox(height: 24),
-                  _buildGoogleBtn(),
-                  const SizedBox(height: 12),
-                  _buildFacebookBtn(), // 👈 kept exactly as you said!a
-                ],
+          return Stack(
+            children: [
+              // 👇 Your existing UI (unchanged)
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: Column(
+                    children: [
+                      _buildAuthCard(context),
+                      const SizedBox(height: 24),
+                      _buildGoogleBtn(),
+                      const SizedBox(height: 12),
+                      _buildFacebookBtn(),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -157,6 +165,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
             ),
             style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Choose a strong password',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.green),
           ),
           const SizedBox(height: 25),
 

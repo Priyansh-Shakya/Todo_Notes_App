@@ -38,6 +38,10 @@ import 'abstractRepo.dart';
 //   return dio;
 // });
 
+
+
+final googleAuthLoadingProvider = StateProvider<bool>((ref) => false);
+
 final tokenProvider = Provider<String?>((ref) {
   final session = ref.watch(authNotifierProvider).value;
   return session?.accessToken;
@@ -66,3 +70,5 @@ final userProvider = Provider<User?>((ref) {
   final session = ref.watch(authNotifierProvider).value;
   return session?.user;
 });
+
+

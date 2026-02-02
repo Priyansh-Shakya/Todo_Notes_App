@@ -51,7 +51,7 @@ class MainNoteScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () async {
-                await Soundmanager.playDeleteSound();
+                SoundManager.playDeleteSound();
                 await ref
                     .read(noteNotifierProvider.notifier)
                     .deleteNote(ids: selectedIds.toList());
@@ -199,7 +199,7 @@ class MainNoteScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add, size: 30, color: Colors.blue),
         onPressed: () {
-          Soundmanager.playPopUpSound();
+          SoundManager.playPopUpSound();
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CreateNote()),

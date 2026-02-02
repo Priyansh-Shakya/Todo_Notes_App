@@ -5,10 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
 
-class CacheNoti {
-  static List<NotificationModel>? notiList;
-}
-
 class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
   @override
   FutureOr<List<NotificationModel>> build() {
@@ -36,11 +32,7 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
   Future<void> addLocal(NotificationModel noti) async {
     final prev = state.value ?? [];
 
-    //into cache
-    CacheNoti.notiList = prev;
-    CacheNoti.notiList?.add(noti);
-
-    // state = AsyncValue.data([...prev, noti]);
+    state = AsyncValue.data([...prev, noti]);
 
     debugPrint("Noti taskId: ${noti.taskId}");
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Presentation/Providers/authProvider.dart';
@@ -73,7 +74,16 @@ class AuthNotifier extends AsyncNotifier<Session?> {
   }
 
   Future<void> signInWithGoogle() async {
-    await repo.signInWithGoogle();
+    try {
+      await repo.signInWithGoogle();
+      debugPrint(
+        'Signed in with Google ------------------------------------------',
+      );
+    } finally {
+      debugPrint(
+        "Turned to true ----------------------------------------------",
+      );
+    }
   }
 
   Future<void> signOut() async {

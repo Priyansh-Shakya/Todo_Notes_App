@@ -34,7 +34,7 @@ class _CreateNoteState extends ConsumerState<CreateNote> {
       createdAt: DateTime.now().toString(),
     );
 
-    Soundmanager.playPopUpSound();
+    SoundManager.playPopUpSound();
 
     // 2) Call notifier (business logic)
     await ref.read(noteNotifierProvider.notifier).writeNote(note: note);

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
@@ -17,9 +18,10 @@ final dioProvider = Provider<Dio>((ref) {
 
   dio.interceptors.add(
     InterceptorsWrapper(
-      onRequest: (options, handler) {
-        final token = ref.read(tokenProvider);
-
+      onRequest: (options, handler) async {
+        final authState = await ref.read(authNotifierProvider.future);
+        final token = authState?.accessToken;
+        debugPrint("Access Token: $token");
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
           print('🔐 JWT attached');

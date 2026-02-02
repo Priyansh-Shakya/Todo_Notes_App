@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
   void onScreenTapped(int index) {
     setState(() {
       //play nav sound
-      Soundmanager.playNavSound();
+      SoundManager.playNavSound();
       selectedScreen = index;
       print(selectedScreen);
       if (selectedScreen == 2) {

@@ -68,6 +68,8 @@ class Settings extends ConsumerWidget {
                     ),
                     onTap: () {
                       ref.read(authNotifierProvider.notifier).signOut();
+                      ref.read(googleAuthLoadingProvider.notifier).state =
+                          false;
                     },
                   ),
                 ],

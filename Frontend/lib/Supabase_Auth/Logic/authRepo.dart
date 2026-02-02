@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/abstractRepo.dart';
 
@@ -30,11 +34,39 @@ class AuthRepo implements AuthenticationRepo {
     }
   }
 
+  
+
   @override
-  Future<void> signInWithGoogle() async {
-    await client.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: 'com.example.todo_notes://login-callback',
+  Future<AuthResponse> signInWithGoogle() async {
+    
+    // get web clientId per project/App
+    const webClientId =
+        '270376679264-uman5onorrigndsvk4ifssss9nm19kch.apps.googleusercontent.com';
+
+    final GoogleSignIn signIn = GoogleSignIn.instance;
+
+    // At the start of your app, initialize the GoogleSignIn instance
+    unawaited(signIn.initialize(serverClientId: webClientId));
+
+    // Perform the sign in
+    final googleAccount = await signIn.authenticate();
+    final googleAuthorization = await googleAccount.authorizationClient
+        .authorizationForScopes(['email', 'profile']);
+
+    final googleAuthentication = googleAccount.authentication;
+    final idToken = googleAuthentication.idToken;
+    final accessToken = googleAuthorization?.accessToken;
+
+    if (idToken == null) {
+      throw 'No ID Token found.';
+    }
+    debugPrint('Google ID Token: $idToken');
+    debugPrint('Google Access Token: $accessToken');
+
+    return client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
     );
   }
 
@@ -49,7 +81,10 @@ class AuthRepo implements AuthenticationRepo {
   }
 
   @override
-  Stream<Session?> get currentSession =>
-      Supabase.instance.client.auth.onAuthStateChange
-          .map((event) => event.session);
+  Stream<Session?> get currentSession => Supabase
+      .instance
+      .client
+      .auth
+      .onAuthStateChange
+      .map((event) => event.session);
 }

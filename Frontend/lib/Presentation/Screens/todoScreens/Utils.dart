@@ -12,7 +12,7 @@ Future<bool?> showDeleteDialog(BuildContext context) {
         actions: [
           TextButton(
             onPressed: () {
-              Soundmanager.playDeleteSound();
+              SoundManager.playDeleteSound();
               Navigator.of(context).pop(true);
             }, // close dialog
 

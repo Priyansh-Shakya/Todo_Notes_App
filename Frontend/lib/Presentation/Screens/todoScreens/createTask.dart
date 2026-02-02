@@ -72,7 +72,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
           }
         }
         if (ready) {
-          Soundmanager.playPopUpSound();
+          SoundManager.playPopUpSound();
           debugPrint(notiData.pickedDate.toString());
           debugPrint(notiData.selectedDays.toString());
           debugPrint(notiData.pickedTimes.toString());
@@ -93,7 +93,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
         debugPrint(notiData.pickedTimes.toString());
       }
       if (!isNotiOn) {
-        Soundmanager.playPopUpSound();
+        SoundManager.playPopUpSound();
         Navigator.of(context).pop();
         ref.read(todoNotifierProvider.notifier).createTodo(payload: todo);
       }

@@ -108,7 +108,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                             ), // ✅ tick mark color ),
                             value: oneTodo.isComplete,
                             onChanged: (bool? newVal) {
-                              Soundmanager.playPopUpSound();
+                              SoundManager.playPopUpSound();
                               final updateTodo = TodoEntity(
                                 id: oneTodo.id,
                                 task: oneTodo.task,
@@ -160,7 +160,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, size: 30, color: Colors.blue),
         onPressed: () {
-          Soundmanager.playPopUpSound();
+          SoundManager.playPopUpSound();
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => CreateTask()));
