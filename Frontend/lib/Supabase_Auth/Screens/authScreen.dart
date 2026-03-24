@@ -275,7 +275,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (isLogin) {
       await notifier.signInWithEmail(data);
     } else {
+      debugPrint("Sigining Up with EMAIL: ${data.email}");
       await notifier.signUpWithEmail(data);
+      debugPrint("Creating user for EMAIL: ${data.email}");
     }
   }
 }

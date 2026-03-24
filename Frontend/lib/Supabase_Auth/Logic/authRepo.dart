@@ -34,11 +34,8 @@ class AuthRepo implements AuthenticationRepo {
     }
   }
 
-  
-
   @override
   Future<AuthResponse> signInWithGoogle() async {
-    
     // get web clientId per project/App
     const webClientId =
         '270376679264-uman5onorrigndsvk4ifssss9nm19kch.apps.googleusercontent.com';
@@ -63,11 +60,25 @@ class AuthRepo implements AuthenticationRepo {
     debugPrint('Google ID Token: $idToken');
     debugPrint('Google Access Token: $accessToken');
 
-    return client.auth.signInWithIdToken(
+    final response = await client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
       accessToken: accessToken,
     );
+
+    // Check if it is a new user
+    final user = response.user;
+    if (user != null) {
+      // check if created at is equal to last signed in.
+      final isNewUser = user.createdAt == user.lastSignInAt;
+
+      if (isNewUser) {
+        debugPrint("New user (Sign Up)");
+      } else {
+        debugPrint("Old user (Sign In)");
+      }
+    }
+    return response;
   }
 
   @override
