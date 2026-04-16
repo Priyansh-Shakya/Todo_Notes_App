@@ -7,6 +7,9 @@
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
 
         <activity
             android:name=".MainActivity"
@@ -21,6 +24,8 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+
+
 
             <!-- App launcher -->
             <intent-filter>

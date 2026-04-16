@@ -1,5 +1,6 @@
 import 'package:todo_notes/Presentation/Screens/notifications/notiData.dart';
 
+
 class NotificationModel {
   int? taskId;
   final String scheduleType; // "date" or "weekly"

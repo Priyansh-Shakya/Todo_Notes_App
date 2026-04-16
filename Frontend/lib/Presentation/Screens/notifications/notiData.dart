@@ -1,5 +1,6 @@
 import 'package:todo_notes/Data/Models/notiModel.dart';
 
+
 enum NotificationType { dateBased, weekly }
 
 class NotificationData {
@@ -7,7 +8,7 @@ class NotificationData {
   final Set<int> selectedDays;
   final List<String> pickedTimes;
   final List<String> displayTimes;
-
+  
   NotificationData({
     this.pickedDate,
     Set<int>? selectedDays,

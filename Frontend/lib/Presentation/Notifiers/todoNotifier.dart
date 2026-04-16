@@ -2,12 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Data/Repositories/todoRepo.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
+
+//? For TimeZone
+Future<String> getLocalTimeZone() async {
+  final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+  String timezone = timezoneInfo.identifier;
+  debugPrint('TIMEZONE: $timezone');
+  return timezone;
+}
 
 class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
   TodoRepo get repo => ref.watch(todoRepoProvider);
@@ -63,6 +72,8 @@ class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
 
       // 2️⃣ optimistic notification
       if (noti != null) {
+        final tz = await getLocalTimeZone();
+        noti = noti.copyWith(timezone: tz);
         ref
             .read(notificationNotifierProvider.notifier)
             .addLocal(noti.copyWith(taskId: created.id));

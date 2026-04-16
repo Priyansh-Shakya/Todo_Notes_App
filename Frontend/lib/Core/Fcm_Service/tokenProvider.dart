@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_notes/Core/Fcm_Service/fcm_service.dart';
 import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
-import 'package:todo_notes/Presentation/Providers/userProvider.dart';
 
 final fcmTokenProvider = StateProvider<String?>((ref) => null);
 
