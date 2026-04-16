@@ -1,19 +1,22 @@
 from typing import List
 from fastapi import HTTPException
-from supabase_client import supabase_admin
+from supabase_client import supabase_user
 from supabase import Client
 from models import WriteNote , ReadNote , UpdateNote
 
 
-supabase: Client = supabase_admin
 
 
 
-async def read_notes(user):
+
+async def read_notes(user, supabase: Client):
     response = supabase.table('notes').select("*").eq('user_id', user['id']).execute()
     return [ReadNote(**row) for row in response.data]
 
-async def write_note(note:WriteNote , user):
+
+
+
+async def write_note(note:WriteNote , user, supabase: Client):
     data = {
         **note.model_dump(),
         'user_id' : user['id']
@@ -22,7 +25,10 @@ async def write_note(note:WriteNote , user):
     response = supabase.table('notes').insert(data).execute()
     return ReadNote(**response.data[0])
 
-async def update_note(id:int ,note:UpdateNote , user):
+
+
+
+async def update_note(id:int ,note:UpdateNote , user, supabase: Client):
     response = (
         supabase.table('notes').update(note.model_dump(exclude_unset=True))
         .eq('user_id', user['id']).execute()
@@ -34,7 +40,7 @@ async def update_note(id:int ,note:UpdateNote , user):
     return ReadNote(**response.data[0])
 
 
-async def delete_note(ids:List[int] , user):
+async def delete_note(ids:List[int] , user, supabase: Client):
     response = (
         supabase.table('notes').delete().in_('id', ids).eq('user_id', user['id']).execute()
 

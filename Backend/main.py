@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import FastAPI, Depends
 from fastapi import Query
+
 from auth import get_current_user
 import note_service
 from notifications.noti_model import NotificationCreate, NotificationRead
@@ -11,8 +12,31 @@ from auth import get_current_user
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from user_table import create_user , update_user ,  Users
 
-app = FastAPI()
+from notifications.cron_job import scheduler , apscheduler_start
+
+from contextlib import asynccontextmanager
+import firebase_admin
+
+from supabase import Client
+from supabase_client import get_supabase_client
+
+import firebase_admin
+print(firebase_admin.__version__)
+
+
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    apscheduler_start()  # Start the scheduler
+    yield             # pause here while app is running
+    scheduler.shutdown()  # Shutdown the scheduler on app shutdown
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -32,30 +56,34 @@ async def get_user(user=Depends(get_current_user)):
 @app.post("/writetodo", response_model=ReadTodo)
 async def create_todo(
     todo: WriteTodo,
-    user=Depends(get_current_user)
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client),
 ):
-    return await todo_service.write_todo(todo, user)
+    return await todo_service.write_todo(todo, user, supabase)
 
 @app.get("/readtodos", response_model=list[ReadTodo])
 async def read_todos(
-     user=Depends(get_current_user)
+     user=Depends(get_current_user),
+     supabase: Client = Depends(get_supabase_client)
 ):
-    return await todo_service.read_all_todos(user)
+    return await todo_service.read_all_todos(user, supabase)
 
 @app.put("/updatetodo/{id}", response_model=ReadTodo)
 async def update_todo(
     id: int,
     todo: UpdateTodo,
+    supabase: Client = Depends(get_supabase_client),
     user=Depends(get_current_user)
 ):
-    return await todo_service.update_todo(id, todo, user)
+    return await todo_service.update_todo(id, todo, user, supabase)
 
 @app.delete("/deletetodo/{id}", response_model=ReadTodo)
 async def delete_todo(
     id: int,
-    user=Depends(get_current_user)
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
 ):
-    return await todo_service.delete_todo(id, user)
+    return await todo_service.delete_todo(id, user, supabase)
 
 
 
@@ -73,25 +101,38 @@ async def create_note(
 
 @app.get('/readnotes', response_model=List[ReadNote])
 async def read_note(
-    user = Depends(get_current_user)):
-    return await note_service.read_notes(user)
+    user = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    return await note_service.read_notes(user, supabase)
 
 
 @app.put('/updatenote/{id}', response_model=ReadNote)
-async def update_note(id:int , note:UpdateNote , user = Depends(get_current_user)):
-    return await note_service.update_note(id ,note , user)
+async def update_note(id:int , note:UpdateNote , user = Depends(get_current_user), supabase: Client = Depends(get_supabase_client)):
+    return await note_service.update_note(id ,note , user, supabase)
 
 @app.delete('/deletenotes', response_model=List[ReadNote])
-async def delete_notes(ids: List[int] = Query(...), user = Depends(get_current_user)):
-    return await note_service.delete_note(ids , user)
-
+async def delete_notes(ids: List[int] = Query(...), user = Depends(get_current_user), supabase: Client = Depends(get_supabase_client)):
+    return await note_service.delete_note(ids , user, supabase)
 
 
 ###### ========================= Notification Routes ================================================
 @app.post('/setnoti', response_model=NotificationRead)
-async def create_noti(noti: NotificationCreate):
-    return await set_notification(noti)
+async def create_noti(noti: NotificationCreate, supabase: Client = Depends(get_supabase_client)):
+    return await set_notification(noti, supabase)
 
 @app.get("/getnoti", response_model=list[NotificationRead])
-async def get_noti(user = Depends(get_current_user)):
-    return await get_notifications(user)
+async def get_noti(user = Depends(get_current_user), supabase: Client = Depends(get_supabase_client)):
+    return await get_notifications(user, supabase)
+
+
+####### =========================== User =========================================================
+
+@app.post('/createuser', response_model= Users)
+async def create_user_route(user: Users, supabase: Client = Depends(get_supabase_client)):
+    return await create_user(user, supabase)
+
+
+@app.put('/updateuser', response_model= Users)
+async def update_user_route(user: Users, supabase: Client = Depends(get_supabase_client)):
+    return await update_user(user, supabase)

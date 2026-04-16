@@ -42,14 +42,13 @@ def get_current_user(creds=Depends(security)):
             algorithms=["ES256"],
             options={"verify_aud": False},
         )
-    except Exception:
+    except Exception as e:
+        print("JWT ERROR:", e)
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user =  {
+    return {
         "id": payload["sub"],
         "email": payload.get("email"),
         "role": payload.get("role"),
+        "token": token,   # ✅ ADD THIS (CRITICAL)
     }
-    return user
-
-

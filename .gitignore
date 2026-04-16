@@ -5,7 +5,7 @@ Backend/.venv/
 Backend/__pycache__/
 Backend/.env
 Backend/*.sqlite3
-
+Backend/notifications/fcm_admin_config.json
 # --------------------
 # Frontend (Flutter)
 # --------------------

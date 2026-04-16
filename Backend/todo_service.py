@@ -1,11 +1,11 @@
 from http.client import HTTPException
 from models import WriteTodo, ReadTodo, UpdateTodo
 from supabase import Client
-from supabase_client import supabase_admin
+from supabase_client import supabase_user
 
-supabase: Client = supabase_admin
 
-async def read_all_todos(user):
+
+async def read_all_todos(user, supabase: Client):
     response = (
     supabase
     .table("todos")
@@ -18,12 +18,12 @@ async def read_all_todos(user):
 
     return [ReadTodo(**row) for row in response.data]
 
-async def write_todo(todo: WriteTodo, user):
+async def write_todo(todo: WriteTodo, user, supabase: Client):
     data = {
         **todo.model_dump(),
         "user_id": user['id']
     }
-
+    print(f"user_id: {user['id']}")
     response = (
         supabase
         .table("todos")
@@ -34,7 +34,7 @@ async def write_todo(todo: WriteTodo, user):
     return ReadTodo(**response.data[0])
 
 
-async def update_todo(id: int, todo: UpdateTodo, user):
+async def update_todo(id: int, todo: UpdateTodo, user, supabase: Client):
     response = (
         supabase
         .table("todos")
@@ -51,7 +51,7 @@ async def update_todo(id: int, todo: UpdateTodo, user):
 
 
 
-async def delete_todo(id: int, user):
+async def delete_todo(id: int, user, supabase: Client):
     response = (
         supabase
         .table("todos")
