@@ -1,3 +1,6 @@
+from urllib import response
+from typing import Optional
+from fastapi import HTTPException
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
@@ -6,7 +9,7 @@ class Users(BaseModel):
     user_id : UUID
     email : str
     fcm_device_token : str | None = None
-    acc_created_at : datetime 
+    acc_created_at : Optional[datetime ] = None
 
 
 ##--------------------- Functions for user table -----------------------
@@ -30,9 +33,11 @@ async def create_user(user: Users , supabase: Client):
         # raise ValueError("User already exists")
     return Users(**response.data[0])
 
-async def update_user(user: Users , supabase: Client):
-    data = user.model_dumn(mode="json",exclude = {'user_id' , 'acc_created_at'})
+async def update_user(user_id:str , user: Users , supabase: Client):
+    data = user.model_dump(mode="json",exclude = {'user_id' , 'acc_created_at'})
 
-    response = supabase.table('users').update(data).eq('user_id', str(user.user_id)).execute()
+    response = supabase.table('users').update(data).eq('user_id', user_id).execute()
 
+    if not response.data:
+        raise HTTPException(status_code=404, detail="User not found")
     return Users(**response.data[0])

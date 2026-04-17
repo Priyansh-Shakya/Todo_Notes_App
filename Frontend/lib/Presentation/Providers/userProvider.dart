@@ -1,11 +1,11 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Data/DataSources/RemoteSources/userService.dart';
 import 'package:todo_notes/Data/Repositories/userRepo.dart';
+import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Presentation/Providers/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
-import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 
 final userServiceProvider = Provider<UserService>((ref) {
   final dio = ref.watch(dioProvider);
@@ -17,21 +17,29 @@ final userRepoProvider = Provider<UserRepo>((ref) {
   return UserRepo(api: api);
 });
 
-
 // Sends a create user api whenever auth state changes.
 final authListenerProvider = Provider<void>((ref) {
   final authRepo = ref.read(authRepoProvider);
 
   authRepo.getAuthState().listen((data) async {
-    final event = data.event;
     final session = data.session;
 
-    if (event == AuthChangeEvent.signedIn && session != null) {
+    if (session != null) {
       final user = session.user;
 
-      debugPrint("🔥 GLOBAL LISTENER: Signed in as ${user.email}");
-      
-      await ref.read(userNotifierProvider.notifier).createUser();
+      debugPrint("🔥 Signed in: ${user.email}");
+
+      final token = await FirebaseMessaging.instance.getToken();
+
+      if (token != null) {
+        await ref
+            .read(userNotifierProvider.notifier)
+            .updateFcmToken(token: token);
+
+        debugPrint(
+          "✅ --------------------------------------------------- Token synced after login: $token",
+        );
+      }
     }
   });
 });

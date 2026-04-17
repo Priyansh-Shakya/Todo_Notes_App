@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:todo_notes/Data/Models/todoModel.dart';
 
 class TodoService {
@@ -27,8 +26,6 @@ class TodoService {
       if (response.statusCode == 200) {
         final data = response.data;
         if (data is List) {
-          
-
           return data
               .map((e) => TodoModel.fromJson(e as Map<String, dynamic>))
               .toList();

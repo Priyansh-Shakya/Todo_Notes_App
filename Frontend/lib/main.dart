@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppTheme/appTheme.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
-import 'package:todo_notes/Core/Fcm_Service/fcm_service.dart';
 import 'package:todo_notes/Core/Fcm_Service/firebase_options.dart';
 import 'package:todo_notes/Core/Fcm_Service/tokenProvider.dart';
+import 'package:todo_notes/Core/appBootstrap.dart';
 import 'package:todo_notes/Presentation/Providers/userProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Helpers/initilizeSupabase.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authGate.dart';
@@ -28,7 +28,7 @@ void main() async {
     SystemUiMode.manual,
     overlays: [SystemUiOverlay.top],
   );
-  runApp(ProviderScope(child: MyApp()));
+  runApp(ProviderScope(child: AppInitializer(child: MyApp())));
 }
 
 class MyApp extends ConsumerWidget {

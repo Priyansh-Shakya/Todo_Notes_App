@@ -183,7 +183,7 @@ async def safe_check():
         print("Scheduler error:", e)
 
 def apscheduler_start():
-    scheduler.add_job(safe_check, 'interval', seconds=10, max_instances=1)
+    scheduler.add_job(safe_check, 'interval', minutes=1, max_instances=1)
     print("Job working")
     scheduler.start()
 

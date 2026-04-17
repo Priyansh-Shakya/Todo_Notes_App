@@ -33,7 +33,9 @@ Future<void> _handleTokenUpdate(Ref ref, String newToken) async {
 
     // save AFTER successful update
     await setFcmToken(newToken);
-    ref.read(userNotifierProvider.notifier).updateFcmToken();
+
+    final token = await FirebaseMessaging.instance.getToken();
+    ref.read(userNotifierProvider.notifier).updateFcmToken(token: token!);
     debugPrint("New token sent to backend: $newToken");
   } else {
     debugPrint("Token unchanged, skipping API call");

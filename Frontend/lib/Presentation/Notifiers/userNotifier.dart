@@ -48,7 +48,7 @@ class UserNotifier extends AsyncNotifier<void> {
     await repo.createUser(user: userEntity);
   }
 
-  Future<void> updateFcmToken() async {
+  Future<void> updateFcmToken({required String token}) async {
     User? user;
 
     // Wait until Supabase gives user
@@ -64,8 +64,7 @@ class UserNotifier extends AsyncNotifier<void> {
 
     final repo = ref.read(userRepoProvider);
 
-    // Getfcm token
-    final token = ref.read(fcmTokenProvider);
+    
     debugPrint(
       "-------------------------------- FCM token from notifier: $token",
     );

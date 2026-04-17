@@ -133,6 +133,6 @@ async def create_user_route(user: Users, supabase: Client = Depends(get_supabase
     return await create_user(user, supabase)
 
 
-@app.put('/updateuser', response_model= Users)
-async def update_user_route(user: Users, supabase: Client = Depends(get_supabase_client)):
-    return await update_user(user, supabase)
+@app.put('/updateuser/{user_id}', response_model= Users)
+async def update_user_route(user_id:str ,user: Users, supabase: Client = Depends(get_supabase_client)):
+    return await update_user(user_id, user, supabase)
