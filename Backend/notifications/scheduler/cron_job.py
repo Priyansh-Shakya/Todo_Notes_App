@@ -1,5 +1,5 @@
 
-from .fcm_service import send_notification
+from ..fcm_service import send_notification
 from supabase_client import supabase_admin
 from supabase import Client
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -16,7 +16,7 @@ from datetime import datetime, timezone, timedelta
 import pytz
 
 
-def already_triggered(schedule, db_time_str, now_utc):
+def already_triggered(schedule, scheduled_dt, now_utc):
     last = schedule.get("last_triggered_at")
 
     if not last:
@@ -32,7 +32,7 @@ def already_triggered(schedule, db_time_str, now_utc):
     # same day + same slot
     return (
         last_local.date() == now_local.date() and
-        last_local.strftime("%H:%M") == db_time_str
+        abs((last_local - scheduled_dt).total_seconds()) < 120
     )
 
 
@@ -47,23 +47,27 @@ async def check_tasks_for_notification():
 
     # 🔥 Fetch schedules + related todos + users
     response = (
-        supabase
-        .table("notification_schedules")
-        .select("""
-            *,
-            todos (
-                id,
-                task,
+    supabase
+    .table("notification_schedules")
+    .select("""
+        *,
+        todos (
+            id,
+            task,
+            user_id,
+            users (
                 user_id,
-                users (
-                    user_id,
-                    fcm_device_token
-                )
+                fcm_device_token
+            ),
+            ai_gen_db!left (
+                notification_text,
+                task_id
             )
-        """)
-        .eq("is_active", True)
-        .execute()
-    )
+        )
+    """)
+    .eq("is_active", True)
+    .execute()
+)
 
     data = response.data or []
     print("Schedules fetched:", len(data))
@@ -77,8 +81,60 @@ async def check_tasks_for_notification():
         try:
             print("\n🔍 Processing schedule:", s.get("id"))
 
-            # 🔥 1. Timezone conversion
-            tz = pytz.timezone(s["timezone"])
+            
+
+            # 🔥 1. Extract nested data safely
+            schedule_id = s.get("id")
+            task_id = s.get("task_id")
+            schedule_type = s.get("schedule_type")
+            times = s.get("times")
+            tz_name = s.get("timezone")
+
+            # todos
+            todos = s.get("todos") or {}
+            todo_id = todos.get("id")
+            task_text = todos.get("task")
+
+            # users (nested inside todos)
+            user = todos.get("users") or {}
+            user_id = user.get("user_id")
+            fcm_token = user.get("fcm_device_token")
+
+            # ai_gen_db (nested inside todos)
+            ai_db = todos.get("ai_gen_db")
+
+            ai_msg = None
+
+            if ai_db:
+                if isinstance(ai_db, list):
+                    ai_msg = ai_db[0].get("notification_text")
+                else:
+                    ai_msg = ai_db.get("notification_text")
+
+            if not ai_msg:
+                ai_msg = task_text
+
+            print(schedule_id, task_text, ai_msg, fcm_token)
+
+
+
+            print("TASK ID:", task_id)
+            print("TASK:", task_text)
+            print("USER ID:", user_id)
+            print("FCM TOKEN:", fcm_token)
+            print("AI Generated MSG:" , ai_msg)
+
+            if not fcm_token:
+                print("⚠️ No FCM token, skipping")
+                continue
+            
+            if not ai_msg:
+                #! Fallback logic
+                ai_msg = task_text
+
+
+            # 🔥 2. Timezone conversion
+            tz = pytz.timezone(tz_name)
             now_local = now_utc.astimezone(tz)
 
             current_time = now_local.strftime("%H:%M")
@@ -91,25 +147,6 @@ async def check_tasks_for_notification():
             print("Current time:", current_time)
             print("Today:", today)
             print("Weekday (pg):", pg_weekday)
-
-            # 🔥 2. Extract nested data safely
-            todo = s.get("todos", {})
-            user = todo.get("users", {})
-
-            task_id = s.get("task_id")
-            task_text = todo.get("task")
-            user_id = todo.get("user_id")
-            fcm_token = user.get("fcm_device_token")
-
-            print("TASK ID:", task_id)
-            print("TASK:", task_text)
-            print("USER ID:", user_id)
-            print("FCM TOKEN:", fcm_token)
-
-            if not fcm_token:
-                print("⚠️ No FCM token, skipping")
-                continue
-
             # 🔥 3. Schedule type check
             if s["schedule_type"] == "date":
                 if s["scheduled_date"] != str(today):
@@ -124,7 +161,7 @@ async def check_tasks_for_notification():
             print("DB times:", s["times"])
 
             # 🔥 4. Time window logic (2-minute safe window)
-            window_start = now_local - timedelta(minutes=2)
+            window_start = now_local - timedelta(minutes=3)
 
             triggered = False
 
@@ -132,12 +169,8 @@ async def check_tasks_for_notification():
                 db_time = t[:5]  # HH:MM
 
                 hour, minute = map(int, db_time.split(":"))
-                scheduled_dt = now_local.replace(
-                    hour=hour,
-                    minute=minute,
-                    second=0,
-                    microsecond=0
-                )
+                scheduled_dt = datetime.combine(today, datetime.strptime(db_time, "%H:%M").time())
+                scheduled_dt = tz.localize(scheduled_dt)
 
                 print(f"⏰ Checking time: {db_time} vs now {current_time}")
 
@@ -145,7 +178,7 @@ async def check_tasks_for_notification():
                     print("✅ Time matched inside window")
 
                     # 🔹 prevent duplicate
-                    if already_triggered(s, db_time, now_utc):
+                    if already_triggered(s, scheduled_dt, now_utc):
                         print("⏭ Already triggered, skipping")
                         continue
 
@@ -153,7 +186,7 @@ async def check_tasks_for_notification():
 
                     #! ---------------- 🔹 send notification ----------------
                     print("📨 Sending notification...")
-                    send_notification(fcm_token, task_text, "AI generated reminder for your task!")
+                    send_notification(fcm_token, task_text, ai_msg)
 
                     # 🔹 mark triggered
                     supabase.table("notification_schedules").update({
@@ -175,6 +208,13 @@ async def check_tasks_for_notification():
 scheduler = AsyncIOScheduler()
 
 
+#! Start scheduler
+
+def start_scheduler():
+    scheduler.start()
+
+
+#! Scheduler for checking notifications every minute
 ## For safe execution of the scheduled task with error handling
 async def safe_check():
     try:
@@ -182,11 +222,31 @@ async def safe_check():
     except Exception as e:
         print("Scheduler error:", e)
 
+
+
+
 def apscheduler_start():
-    scheduler.add_job(safe_check, 'interval', minutes=1, max_instances=1)
-    print("Job working")
-    scheduler.start()
+    scheduler.add_job(
+        safe_check,
+        'interval',
+        seconds=20,
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=120
+    )
+    print("Notification scheduler added")
 
 
+#! Scheduler for sending tasks for getting AI gen messages!
+from notifications.Ai_gen_noti.gen_corn import send_task_to_ai
 
-    
+def ai_scheduler_start():
+    scheduler.add_job(
+        send_task_to_ai,
+        'interval',
+        seconds=30,
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=180
+    )
+    print("AI scheduler added")

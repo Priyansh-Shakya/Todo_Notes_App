@@ -4,7 +4,7 @@ from supabase_client import supabase_admin
 from .noti_model import NotificationCreate, NotificationRead
 
 
-
+# from notifications.scheduler.schedule_task_noti import schedule_notiication
 
 async def set_notification(noti: NotificationCreate, supabase: Client) -> NotificationRead:
     response = (
@@ -14,7 +14,9 @@ async def set_notification(noti: NotificationCreate, supabase: Client) -> Notifi
         .execute()
     )
 
-    return NotificationRead(**response.data[0])
+    noti =  NotificationRead(**response.data[0])
+    # schedule_notiication(noti)   Not needed yet (FUTURE)
+    return noti
 
 
 async def get_notifications(user, supabase: Client) -> list[NotificationRead]:

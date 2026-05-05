@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from user_table import create_user , update_user ,  Users
 
-from notifications.cron_job import scheduler , apscheduler_start
+
 
 from contextlib import asynccontextmanager
 import firebase_admin
@@ -25,13 +25,15 @@ from supabase_client import get_supabase_client
 import firebase_admin
 print(firebase_admin.__version__)
 
-
+from notifications.scheduler.cron_job import ai_scheduler_start, start_scheduler, apscheduler_start, scheduler
 
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    apscheduler_start()  # Start the scheduler
+    start_scheduler() # Start the scheduler
+    ai_scheduler_start() # scheduler for AI gen notifications
+    apscheduler_start()   # scheduler for cron loop
     yield             # pause here while app is running
     scheduler.shutdown()  # Shutdown the scheduler on app shutdown
 
