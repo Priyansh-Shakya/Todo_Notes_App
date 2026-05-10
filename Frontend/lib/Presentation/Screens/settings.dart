@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
+import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authScreen.dart';
 
+// Add this provider somewhere appropriate
+final notificationToneProvider = StateProvider<String>((ref) => 'Funny');
+
 class Settings extends ConsumerWidget {
-  const Settings({super.key});
+  Settings({super.key});
+
+  final controller = TextEditingController(); //! User info controler
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == ThemeMode.dark;
     final user = ref.watch(userProvider);
+
+    bool isEditing = false; //! for enabling textfield of user info
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings"), centerTitle: true),
@@ -79,7 +87,7 @@ class Settings extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // ─────────────────── Auth Action ───────────────────
+          //* ─────────────────── Auth Action ───────────────────
           if (user == null)
             _SettingsCard(
               child: ListTile(
@@ -99,6 +107,7 @@ class Settings extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
+          //* For Notifications
           _SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,22 +133,244 @@ class Settings extends ConsumerWidget {
 
                 const Divider(),
 
-                // Placeholder for future tone/mood options
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    leading: const Icon(Icons.notifications_active_outlined),
-                    title: const Text('Notification tone'),
-                    subtitle: const Text('Default'),
-                    onTap: () {
-                      // Open bottom sheet / picker later
-                    },
-                  ),
+                // ───── Mood Selection ─────
+                Builder(
+                  builder: (context) {
+                    final selectedTone = ref.watch(notificationToneProvider);
+
+                    final tones = [
+                      'Funny',
+                      'Sarcastic',
+                      'Motivational',
+                      'Serious',
+                    ];
+
+                    return Column(
+                      children: tones.map((tone) {
+                        return RadioListTile<String>(
+                          value: tone,
+                          groupValue: selectedTone,
+                          title: Text(tone),
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          onChanged: (value) {
+                            ref.read(notificationToneProvider.notifier).state =
+                                value!;
+
+                            var dbVal = value.toLowerCase();
+                            if (dbVal == 'sarcastic') {
+                              dbVal = 'scarcastic';
+                            } else if (dbVal == 'serious') {
+                              dbVal = 'strict';
+                            }
+                            ref
+                                .read(userNotifierProvider.notifier)
+                                .updateNotificationTone(dbVal);
+                            debugPrint("Selected tone: $value"); // Debug print
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
+
+                // ───── Old Default Tone Widget (kept for later) ─────
+                /*
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: ListTile(
+          leading: const Icon(Icons.notifications_active_outlined),
+          title: const Text('Notification tone'),
+          subtitle: const Text('Default'),
+          onTap: () {
+            // Open bottom sheet / picker later
+          },
+        ),
+      ),
+      */
               ],
             ),
           ),
           SizedBox(height: 10),
+          _SettingsCard(
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                "Advance Settings",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+
+          SizedBox(height: 15),
+          _SettingsCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Personalization',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.info_outline),
+                    tooltip: 'About personalization',
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Personalized Notifications'),
+                          content: const Text(
+                            'Add details about yourself so notifications can feel '
+                            'more relevant and personalized.'
+                            'Add Basic Information about yourself , such as:\n\n'
+                            'Name: Jhon\nAge: 20\nOccupation: Engineer\nLanguages i speak: English , Hindi\nHobbies: Sports and Action movies\nEtc.'
+                            '\nSpecifying what languages you speak will help us send you notifications in those languages, if supported.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const Divider(),
+
+                // TextField + Submit
+                StatefulBuilder(
+                  builder: (context, setState) {
+                    int wordCount(String text) {
+                      if (text.trim().isEmpty) return 0;
+
+                      return text.trim().split(RegExp(r'\s+')).length;
+                    }
+
+                    final currentWordCount = wordCount(controller.text);
+
+                    final isOverLimit = currentWordCount > 100;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isEditing) ...[
+                          TextField(
+                            controller: controller,
+                            minLines: 3,
+                            maxLines: null,
+                            textInputAction: TextInputAction.newline,
+                            enableInteractiveSelection: true,
+                            onChanged: (_) {
+                              setState(() {});
+                            },
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Name: Jhon\nAge: 20\nOccupation: Engineer\nLanguages i speak: English , Hindi\nHobbies: Sports and Action movies\nEtc.',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              controller.text,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+
+                        // Word Counter
+                        if (isEditing)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              '$currentWordCount/100 words',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: isOverLimit ? Colors.red : null,
+                                  ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 16),
+
+                        // Submit Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              // If currently viewing static text,
+                              // unlock editing mode
+                              if (!isEditing) {
+                                setState(() {
+                                  isEditing = true;
+                                });
+                                return;
+                              }
+
+                              // Validation
+                              if (isOverLimit ||
+                                  controller.text.trim().isEmpty) {
+                                return;
+                              }
+
+                              final userInfo = controller.text.trim();
+
+                              debugPrint("Submitted info: $userInfo");
+
+                              await ref
+                                  .read(userNotifierProvider.notifier)
+                                  .updateUserInfo(userInfo);
+
+                              setState(() {
+                                isEditing = false;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Information saved successfully',
+                                  ),
+                                ),
+                              );
+                            },
+
+                            child: isEditing ? Text('Submit') : Text("Update"),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -5,7 +5,7 @@ class UserModel {
   String? email;
   String? fcmDeviceToken;
   String? accCreatedAt;
-
+  
   UserModel({this.userId, this.email, this.fcmDeviceToken, this.accCreatedAt});
 
   UserModel.fromJson(Map<String, dynamic> json) {
@@ -13,6 +13,7 @@ class UserModel {
     email = json['email'];
     fcmDeviceToken = json['fcm_device_token'];
     accCreatedAt = json['acc_created_at'];
+    
   }
 
   Map<String, dynamic> toJson() {
@@ -21,6 +22,7 @@ class UserModel {
     data['email'] = this.email;
     data['fcm_device_token'] = this.fcmDeviceToken;
     data['acc_created_at'] = this.accCreatedAt;
+    
     return data;
   }
 

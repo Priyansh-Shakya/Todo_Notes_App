@@ -64,7 +64,6 @@ class UserNotifier extends AsyncNotifier<void> {
 
     final repo = ref.read(userRepoProvider);
 
-    
     debugPrint(
       "-------------------------------- FCM token from notifier: $token",
     );
@@ -75,5 +74,23 @@ class UserNotifier extends AsyncNotifier<void> {
     );
 
     await repo.updateUser(id: id, user: userEntity);
+  }
+
+  Future<void> updateNotificationTone(String tone) async {
+    User? user = Supabase.instance.client.auth.currentUser;
+    final repo = ref.read(userRepoProvider);
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+    return await repo.updateNotificationTone(tone, user.id);
+  }
+
+  Future<void> updateUserInfo(String userInfo) async {
+    User? user = Supabase.instance.client.auth.currentUser;
+    final repo = ref.read(userRepoProvider);
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+    return await repo.updateUserInfo(userInfo, user.id);
   }
 }

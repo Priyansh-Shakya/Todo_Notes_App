@@ -4,19 +4,38 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
+from enum import Enum
+
+class GenToneEnum(str , Enum):
+    Funny = "funny"
+    Sarcastic = "scarcastic"
+    Strict = "strict"
+    Motivational = "motivational"
+
 
 class Users(BaseModel):
     user_id : UUID
     email : str
     fcm_device_token : str | None = None
     acc_created_at : Optional[datetime ] = None
+    
 
 
 ##--------------------- Functions for user table -----------------------
 
 from supabase import Client
 
+async def update_notification_tone(user_id , tone: GenToneEnum, supabase:Client):
+    response = supabase.table('users').update({'notification_tone': tone}).eq('user_id', user_id).execute()
 
+    if not response.data:
+        raise KeyError("User Id not found", user_id)
+    return response.data[0]
+async def update_user_info(user_id , user_info , supabase:Client):
+    response = supabase.table('users').update({'user_info': user_info}).eq('user_id', user_id).execute()
+    if not response.data:
+        raise KeyError("User Id not found", user_id)
+    return response.data[0]
 
 async def create_user(user: Users , supabase: Client):
     data = {

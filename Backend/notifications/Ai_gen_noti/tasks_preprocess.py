@@ -88,8 +88,7 @@ def preprocess_tasks(tasks):
 
                 user_info += f"""
     Information about User with ID: {user_id}
-
-    "MORE INFO WILL BE INCLUDED LATER"
+    {user['user_info']}
     """
 
             sch_type = schedule["schedule_type"]
@@ -109,9 +108,10 @@ def preprocess_tasks(tasks):
             prompt += f"""
     Task:
     {{
+    "user_id" : {user['user_id']}
     "task_id": {todo['id']},
     "task": "{todo['task']}",
-    "tone": "funny",
+    "tone": {user['notification_tone']},
     "times": {schedule['times']},
     "type": "{sch_type}",
     {type_based}

@@ -46,4 +46,48 @@ class UserService {
       throw Exception("Something went wrong: $e");
     }
   }
+
+  Future<UserModel> updateTone({
+    required String tone,
+    required String user_id,
+  }) async {
+    try {
+      debugPrint("Updating tone for user_id: $user_id with tone: $tone");
+      final response = await dio.patch(
+        '/update-notification-tone/$user_id',
+        queryParameters: {'tone': tone},
+      );
+      debugPrint(response.realUri.toString());
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return UserModel.fromJson(Map<String, dynamic>.from(response.data));
+      } else {
+        throw Exception("Failed to update Tone");
+      }
+    } catch (e) {
+      throw Exception("Something went wrong: $e");
+    }
+  }
+
+  Future<UserModel> updateUserInfo({
+    required String user_info,
+    required String user_id,
+  }) async {
+    try {
+      final response = await dio.patch(
+        '/update-userinfo/$user_id',
+        data: {'user_info': user_info},
+      );
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return UserModel.fromJson(Map<String, dynamic>.from(response.data));
+      } else {
+        throw Exception("Failed to update User Info");
+      }
+    } catch (e) {
+      throw Exception("Something went wrong: $e");
+    }
+  }
 }

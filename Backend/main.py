@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import FastAPI, Depends
 from fastapi import Query
+from fastapi.params import Body
 
 from auth import get_current_user
 import note_service
@@ -12,7 +13,7 @@ from auth import get_current_user
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from user_table import create_user , update_user ,  Users
+from user_table import create_user , update_user ,update_notification_tone, update_user_info,  Users
 
 
 
@@ -96,9 +97,10 @@ async def delete_todo(
 @app.post("/writenote", response_model=ReadNote)
 async def create_note(
     note: WriteNote,
+    supabase = Depends(get_supabase_client),
     user=Depends(get_current_user)
 ):
-    return await note_service.write_note(note, user)
+    return await note_service.write_note(note, user , supabase)
 
 
 @app.get('/readnotes', response_model=List[ReadNote])
@@ -138,3 +140,33 @@ async def create_user_route(user: Users, supabase: Client = Depends(get_supabase
 @app.put('/updateuser/{user_id}', response_model= Users)
 async def update_user_route(user_id:str ,user: Users, supabase: Client = Depends(get_supabase_client)):
     return await update_user(user_id, user, supabase)
+
+@app.patch('/update-notification-tone/{user_id}')
+async def update_tone(
+    user_id: str,
+    tone: str,
+    supabase: Client = Depends(get_supabase_client)
+):
+    print(tone)
+
+    return await update_notification_tone(
+        user_id,
+        tone,
+        supabase
+    )
+
+from fastapi import Body
+
+@app.patch('/update-userinfo/{user_id}')
+async def update_userinfo(
+    user_id: str,
+    user_info: str = Body(..., embed=True),
+    supabase: Client = Depends(get_supabase_client)
+):
+    print(user_info)
+
+    return await update_user_info(
+        user_id,
+        user_info,
+        supabase
+    )

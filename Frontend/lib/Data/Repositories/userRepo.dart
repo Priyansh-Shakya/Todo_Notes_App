@@ -20,4 +20,12 @@ class UserRepo {
     final dto = user.toUserModel();
     await api.updateUser(user: dto, user_id: id);
   }
+
+  Future<void> updateNotificationTone(String tone, String id) async {
+    await api.updateTone(tone: tone, user_id: id);
+  }
+
+  Future<void> updateUserInfo(String userInfo, String id) async {
+    await api.updateUserInfo(user_info: userInfo, user_id: id);
+  }
 }

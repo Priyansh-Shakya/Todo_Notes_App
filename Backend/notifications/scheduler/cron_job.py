@@ -229,7 +229,7 @@ def apscheduler_start():
     scheduler.add_job(
         safe_check,
         'interval',
-        minutes=1,                    #?for testing => seconds=20,
+        minutes = 1,                    #?for testing => seconds=20,
         max_instances=1,
         coalesce=True,
         misfire_grace_time=120
@@ -244,7 +244,7 @@ def ai_scheduler_start():
     scheduler.add_job(
         send_task_to_ai,
         'interval',
-        minutes=3,                    #? For testing => seconds=40,
+        minutes = 3,                    #? For testing => seconds=40,
         max_instances=1,
         coalesce=True,
         misfire_grace_time=180

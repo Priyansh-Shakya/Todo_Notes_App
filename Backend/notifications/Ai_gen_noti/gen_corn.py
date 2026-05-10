@@ -15,6 +15,7 @@ STRICT RULES:
 - Do NOT explain
 - Do NOT use numbering
 - Do NOT add text before or after JSON
+- Use user's Information (If provided) to generate more personalized Notifications. (Do not overuse it, only use if it fits and is better than the versions without it)
 
 TASK:
 Generate notifications for each task and each time.
@@ -22,10 +23,11 @@ Generate notifications for each task and each time.
 REQUIREMENTS:
 - 10–12 words per notification
 - Match tone
-- Match language of task
+- Match language of task (if Task is in 'x' language , notification should be in 'x' language as well)
 - Each time must produce a separate notification
 - Valid tones for notification = ['funny', 'scarcastic', 'strict' , 'motivational']
-- Include emojis relevant to the task and tone
+- Include emojis relevant to the task which coresponds to tone.
+- Each Task object will have user_id , match it with user _id associated with user_information.
 
 OUTPUT FORMAT:
 [

@@ -6,7 +6,12 @@ class UserEntity {
   String? fcmToken;
   String? createdAt;
 
-  UserEntity({required this.uId, required this.email, required this.fcmToken});
+  UserEntity({
+    required this.uId,
+    required this.email,
+    required this.fcmToken,
+   
+  });
 
   UserModel toUserModel() {
     return UserModel(
@@ -14,6 +19,7 @@ class UserEntity {
       email: email,
       fcmDeviceToken: fcmToken,
       accCreatedAt: createdAt,
+      
     );
   }
 }
