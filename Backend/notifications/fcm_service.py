@@ -1,17 +1,19 @@
 import os
 import firebase_admin 
 from firebase_admin import credentials , messaging
-from datetime import datetime
-
+import json
 import sys
 
 print("USING PYTHON:", sys.executable)
 
 # Use environment variable for the service account key path
-cred_path = os.getenv('FCM_ADMIN_CONFIG_PATH', 'E:\\priyansh\\Apps\\todo_notes\\backend\\notifications\\fcm_admin_config.json')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
+config = os.getenv("FIREBASE_FCM_ADMIN_CONFIG")
 
+if not config:
+    raise ValueError("FIREBASE_FCM_ADMIN_CONFIG is missing")
+
+cred = credentials.Certificate(json.loads(config))
+firebase_admin.initialize_app(cred)
 #* ----- MAIN Send Notification Function ----------
 
 def send_notification(fcm_token: str, task: str, gen_msg: str):
