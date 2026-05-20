@@ -1,45 +1,59 @@
+import json
+from urllib import response
+
 import requests
 import os
 from dotenv import load_dotenv
 
-def send_prompt_to_ai(prompt:str):
-        
+def send_prompt_to_ai(prompt: str):
 
     load_dotenv()
     token = os.getenv("HF_TOKEN")
 
-    url = "https://router.huggingface.co/v1/chat/completions"  #?  <-- URL For Api
+    url = "https://router.huggingface.co/v1/chat/completions"
 
-    headers = {         
-        "Authorization":  f"Bearer {token}",  #?  <--- Auth token 
+    headers = {
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
 
-    #! Working model:  "deepseek-ai/DeepSeek-R1:fastest"   (It is a thinking model) 
-    #! can test with these for short responses : "model": "deepseek-ai/DeepSeek-V3" , "model": "meta-llama/Llama-3.1-8B-Instruct"
-
-
-
-
     payload = {
-        "model": "deepseek-ai/DeepSeek-V3",   # IMPORTANT: working model  , MODEL used
+        "model": "deepseek-ai/DeepSeek-V3",
         "messages": [
-            {"role": "user", "content": prompt}  #! Actual user prompt
-        ],
-        #  "max_tokens": 30   # 🔥 THIS controls output length
+            {"role": "user", "content": prompt}
+        ]
     }
 
-    response = requests.post(url, headers=headers, json=payload)   #? API Call
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload
+    )
 
     data = response.json()
 
     print(f"Status Code: {response.status_code}")
     print(data)
+
     if "error" in data:
         print("AI Error:", data["error"]["message"])
-        return None  # don't crash
-    content = data["choices"][0]["message"]["content"]   #? <--  Actual response
-    return content
+        return None
+
+    import json
+
+    content = data['choices'][0]['message']['content']
+
+    # Remove markdown fences
+    content = (
+        content
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    generated_notifications = json.loads(content)
+
+    return generated_notifications
 
 # Will give you a response like:
 # {

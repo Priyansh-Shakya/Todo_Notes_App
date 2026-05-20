@@ -55,14 +55,14 @@ import json
 from notifications.Ai_gen_noti.tasks_preprocess import preprocess_tasks
 #! Add in prompt about timing , changing mood based on context of task and duration of next notifications
 async def send_task_to_ai():
-    print("Fetching data")
+    print("--------------------------------------------- Fetching data ----------------------------------")
     todos = supabase.rpc("get_todos_without_ai_with_schedules").execute()
 
     if not todos.data:
         print("No Todos found without Generated notification text, wait for next CRON run...")
         return
 
-    print("Total Todos fetched:", len(todos.data))
+    print("--------------------------------------------- Total Todos fetched ----------------------------------", len(todos.data))
 
     processed_batch_prompt = preprocess_tasks(todos.data)
 

@@ -49,7 +49,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                   ).colorScheme.onSurfaceVariant.withAlpha(68),
                 ),
                 Text(
-                  "No Notes yet, create new",
+                  "No Tasks yet, create new",
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(
                       context,

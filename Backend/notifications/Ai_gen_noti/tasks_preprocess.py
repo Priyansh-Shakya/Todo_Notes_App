@@ -6,7 +6,7 @@ from datetime import datetime, timedelta , timezone
 
 def create_batches(todos: list, batch_size=3, buffer_seconds=120):
     now = datetime.now()
-    buffer = timedelta( seconds=buffer_seconds) #? for testing , set buffer to 10 seconds
+    buffer = timedelta( seconds=10) #? for testing , set buffer to 10 seconds
 
     safe_todos = []
 

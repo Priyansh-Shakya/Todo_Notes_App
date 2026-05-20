@@ -52,11 +52,20 @@ async def create_user(user: Users , supabase: Client):
         # raise ValueError("User already exists")
     return Users(**response.data[0])
 
-async def update_user(user_id:str , user: Users , supabase: Client):
-    data = user.model_dump(mode="json",exclude = {'user_id' , 'acc_created_at'})
+async def update_user(user_id: str, user: Users, supabase: Client):
 
-    response = supabase.table('users').update(data).eq('user_id', user_id).execute()
+    data = user.model_dump(
+        mode="json",
+        exclude={'acc_created_at'}
+    )
 
-    if not response.data:
-        raise HTTPException(status_code=404, detail="User not found")
+    data['user_id'] = user_id
+
+    response = (
+        supabase
+        .table('users')
+        .upsert(data, on_conflict='user_id')
+        .execute()
+    )
+
     return Users(**response.data[0])
