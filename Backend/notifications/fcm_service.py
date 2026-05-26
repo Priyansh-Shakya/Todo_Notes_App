@@ -6,13 +6,16 @@ import sys
 
 print("USING PYTHON:", sys.executable)
 
-# Use environment variable for the service account key path
 config = os.getenv("FIREBASE_FCM_ADMIN_CONFIG")
 
-if not config:
-    raise ValueError("FIREBASE_FCM_ADMIN_CONFIG is missing")
+service_account = json.loads(config)
 
-cred = credentials.Certificate(json.loads(config))
+service_account["private_key"] = (
+    service_account["private_key"].replace("\\n", "\n")
+)
+
+cred = credentials.Certificate(service_account)
+
 firebase_admin.initialize_app(cred)
 #* ----- MAIN Send Notification Function ----------
 
