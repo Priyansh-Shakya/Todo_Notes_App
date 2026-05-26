@@ -14,13 +14,6 @@ def send_notification(fcm_token:str , task:str, gen_msg:str):
             body=gen_msg,
             
         ),
-        android=messaging.AndroidConfig(
-            priority="high",
-            notification=messaging.AndroidNotification(
-                channel_id="high_importance_channel",
-                sound="default",
-            ),
-        ),
         token=fcm_token
     )
     messaging.send(msg)

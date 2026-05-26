@@ -1,48 +1,93 @@
-//* Refresh screen function
+//* Shared global widgets and refresh helpers
 import 'package:flutter/material.dart';
 import 'package:todo_notes/Core/Connectivity/checkInternet.dart';
-import 'package:todo_notes/Presentation/Notifiers/todoNotifier.dart';
 
-//? Internet not available banner
-Widget showInternetBanner() {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: Colors.red.shade600,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: const Row(
-      children: [
-        Icon(Icons.wifi_off_rounded, color: Colors.white),
+//? Generic error widget for AsyncValue error branches
+Widget showSomethingWentWrongWidget({String? errorDetails}) {
+  final String? message = errorDetails?.split('\n').first;
 
-        SizedBox(width: 10),
-
-        Expanded(
-          child: Text(
-            "No internet connection",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.error_outline, size: 72, color: Colors.red.shade700),
+          const SizedBox(height: 16),
+          Text(
+            'Something went wrong',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-        ),
-      ],
+          if (message != null && message.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
+            ),
+        ],
+      ),
     ),
   );
 }
 
-Future<void> refreshScreen(TodoNotifier notifier) async {
+void showRefreshNoInternetBanner(BuildContext context) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.clearMaterialBanners();
+  messenger.showMaterialBanner(
+    MaterialBanner(
+      content: const Text(
+        'No internet connection. Pull to refresh again.',
+        style: TextStyle(color: Colors.white),
+      ),
+      leading: const Icon(Icons.wifi_off_rounded, color: Colors.white),
+      backgroundColor: Colors.red.shade600,
+      actions: [
+        TextButton(
+          onPressed: messenger.clearMaterialBanners,
+          child: const Text('OK', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+  Future.delayed(const Duration(seconds: 3), messenger.clearMaterialBanners);
+}
+
+Future<void> refreshScreenWithInternetCheck(
+  BuildContext context,
+  Future<void> Function() refreshAction,
+) async {
   final bool isConnected = await checkInternetConnection();
-  if (isConnected) {
-    showInternetBanner();
+  if (!isConnected) {
+    showRefreshNoInternetBanner(context);
+    return;
   }
-  notifier.refreshList();
+
+  await refreshAction();
+}
+
+// Wrap any non-scrollable child (or scrollable) with a RefreshIndicator
+// so pull-to-refresh works even when the content is empty or an error occurred.
+Widget wrapWithRefresh(
+  BuildContext context,
+  Widget child,
+  Future<void> Function() onRefresh,
+) {
+  return RefreshIndicator(
+    onRefresh: onRefresh,
+    child: LayoutBuilder(
+      builder: (ctx, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: child,
+          ),
+        );
+      },
+    ),
+  );
 }

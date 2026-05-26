@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppSounds/soundManager.dart';
-import 'package:todo_notes/Core/Connectivity/checkInternet.dart';
 import 'package:todo_notes/Presentation/Providers/noteStateProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
 import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
@@ -67,44 +66,54 @@ class MainNoteScreen extends ConsumerWidget {
       ),
       body: notesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
+        error: (e, st) => wrapWithRefresh(
+          context,
+          showSomethingWentWrongWidget(errorDetails: e.toString()),
+          () => notifier.refreshList(),
+        ),
         data: (notes) {
           if (notes.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.sticky_note_2_outlined,
-                    size: 96,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withAlpha(68),
-                  ),
-                  Text(
-                    "No Notes yet, create new",
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            return wrapWithRefresh(
+              context,
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.sticky_note_2_outlined,
+                      size: 96,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurfaceVariant.withAlpha(200),
+                      ).colorScheme.onSurfaceVariant.withAlpha(68),
                     ),
-                  ),
-                ],
+                    Text(
+                      "No Notes yet, create new",
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withAlpha(200),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              () => notifier.refreshList(),
             );
           }
 
           return RefreshIndicator(
             onRefresh: () async {
-              final bool isConnected = await checkInternetConnection();
-              if (isConnected) {
-                showInternetBanner();
-              }
-              return notifier.refreshList();
+              return refreshScreenWithInternetCheck(
+                context,
+                () => notifier.refreshList(),
+              );
             },
             child: GridView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: notes.length,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 12,

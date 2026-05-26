@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
+import 'package:todo_notes/Core/permissions.dart';
 import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authScreen.dart';
@@ -15,6 +17,8 @@ class Settings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final permissionAsync = ref.watch(notificationPermissionProvider);
+
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == ThemeMode.dark;
     final user = ref.watch(userProvider);
@@ -44,6 +48,58 @@ class Settings extends ConsumerWidget {
                 onChanged: (value) {
                   ref.read(themeProvider.notifier).toggleTheme(value);
                 },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          //? notification enable
+          // ─────────────────── Notifications ───────────────────
+          _SettingsCard(
+            child: ListTile(
+              title: Text(
+                "Notifications",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              trailing: permissionAsync.when(
+                // Data loaded state: Show the switch based on permission status
+                data: (status) {
+                  final isNoti = status.isGranted;
+                  return Switch(
+                    value: isNoti,
+                    focusColor: Colors.green,
+                    inactiveThumbColor: Colors.red,
+                    activeTrackColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
+                    activeThumbColor: Colors.green,
+                    onChanged: (value) async {
+                      if (value) {
+                        // Request permission if they turned it ON
+                        final newStatus = await Permission.notification
+                            .request();
+                        if (newStatus.isPermanentlyDenied) {
+                          await openAppSettings();
+                        }
+                      } else {
+                        // Guide them to turn it off in settings (OS limitation)
+                        await openAppSettings();
+                      }
+                      // Refresh the provider to update the UI switch state
+                      ref.invalidate(notificationPermissionProvider);
+                    },
+                  );
+                },
+                // Loading state: Show a tiny spinner while checking OS permission
+                loading: () => const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                // Error state: Fallback disabled switch
+                error: (err, stack) =>
+                    const Switch(value: false, onChanged: null),
               ),
             ),
           ),

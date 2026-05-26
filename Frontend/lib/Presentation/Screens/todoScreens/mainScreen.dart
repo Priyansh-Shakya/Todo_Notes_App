@@ -38,32 +38,41 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
     final Widget todos = todoAsync.when(
       data: (todo) {
         if (todo.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.event_note_outlined,
-                  size: 96,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withAlpha(68),
-                ),
-                Text(
-                  "No Tasks yet, create new",
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+          return wrapWithRefresh(
+            context,
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_note_outlined,
+                    size: 96,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurfaceVariant.withAlpha(200),
+                    ).colorScheme.onSurfaceVariant.withAlpha(68),
                   ),
-                ),
-              ],
+                  Text(
+                    "No Tasks yet, create new",
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withAlpha(200),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            () => notifier.refreshList(),
           );
         }
 
         return RefreshIndicator(
-          onRefresh: () => refreshScreen(notifier),
+          onRefresh: () async {
+            return refreshScreenWithInternetCheck(
+              context,
+              () => notifier.refreshList(),
+            );
+          },
 
           child: ListView.builder(
             physics: const BouncingScrollPhysics(
@@ -156,8 +165,11 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
         );
       },
       error: (err, st) {
-        print(err);
-        return Text("Error : $err");
+        return wrapWithRefresh(
+          context,
+          showSomethingWentWrongWidget(errorDetails: err.toString()),
+          () => notifier.refreshList(),
+        );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
     );
