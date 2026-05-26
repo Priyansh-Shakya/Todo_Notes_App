@@ -1,45 +1,37 @@
-import os
 import firebase_admin 
 from firebase_admin import credentials , messaging
-import json
-import sys
 
-print("USING PYTHON:", sys.executable)
 
-config = os.getenv("FIREBASE_FCM_ADMIN_CONFIG")
+cred: str = credentials.Certificate("E:\\priyansh\\Apps\\todo_notes\\backend\\notifications\\fcm_admin_config.json")
+firebase_admin.initialize_app(cred)
 
-service_account = json.loads(config)
-
-service_account["private_key"] = (
-    service_account["private_key"].replace("\\n", "\n")
-)
-
-cred = credentials.Certificate(service_account)
-
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
-
-print("Firebase initialized successfully")
 #* ----- MAIN Send Notification Function ----------
 
-def send_notification(fcm_token: str, task: str, gen_msg: str):
-    if not fcm_token:
-        print(f"No FCM token for task: {task}")
-        return
-    
-    print(f"Preparing notification for task: {task}")
-    print("FCM Token:", fcm_token)
-
+def send_notification(fcm_token:str , task:str, gen_msg:str):
     msg = messaging.Message(
         notification=messaging.Notification(
             title=task,
             body=gen_msg,
+            
+        ),
+        android=messaging.AndroidConfig(
+            priority="high",
+            notification=messaging.AndroidNotification(
+                channel_id="high_importance_channel",
+                sound="default",
+            ),
         ),
         token=fcm_token
     )
-    try:
-        response = messaging.send(msg)
-        print(f"Notification sent: {response}")
-    except Exception as e:
-        print(f"Error sending notification: {e}")
+    messaging.send(msg)
 
+
+#* --------------------- Service Function -----------------------------------
+from supabase_client import supabase_admin
+from supabase import Client
+
+supabase:Client = supabase_admin
+
+def check_tasks_for_notification():
+    data = supabase.table().select("*").eq('is_triggered', False).execute()
+    print(data)

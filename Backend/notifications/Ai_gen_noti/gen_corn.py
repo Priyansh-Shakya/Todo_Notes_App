@@ -6,7 +6,7 @@ from .api_service_ai import send_prompt_to_ai
 
 def send_notification_l2(data_prompt):
     
-    prompt = f"""
+    prompt = """
 You are an AI companion notification generator.
 
 STRICT RULES:
@@ -124,17 +124,17 @@ Match it with the correct user_information object.
 
 OUTPUT FORMAT:
 [
-{
+{{
 "task_id": "Actual Task ID",
 "send_time": "HH:MM:SS",
 "tone": "Tone of Generated Message",
 "notification_text": "Generated companion text"
-}
+}}
 ]
 
 DATA:
-{data_prompt}
-"""
+__DataPrompt__
+    """.replace("__DataPrompt__", data_prompt)
 
     print(prompt)
     return send_prompt_to_ai(prompt=prompt)

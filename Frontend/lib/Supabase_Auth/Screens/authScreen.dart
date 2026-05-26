@@ -69,7 +69,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       const SizedBox(height: 24),
                       _buildGoogleBtn(),
                       const SizedBox(height: 12),
-                      _buildFacebookBtn(),
+                      // _buildFacebookBtn(), // You can uncomment this when you implement Facebook login
                     ],
                   ),
                 ),

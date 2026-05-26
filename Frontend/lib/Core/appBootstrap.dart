@@ -21,6 +21,11 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
   }
 
   Future<void> _init() async {
+
+    //? Adding android notification high importance setup
+    
+
+
     final user = Supabase.instance.client.auth.currentUser;
 
     if (user == null) {

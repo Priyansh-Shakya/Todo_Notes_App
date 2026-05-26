@@ -66,7 +66,9 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
           onRefresh: () => refreshScreen(notifier),
 
           child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             itemCount: todo.length,
             itemBuilder: (context, index) {
               final oneTodo = todo[index];

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppTheme/appTheme.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
@@ -28,6 +29,23 @@ void main() async {
     SystemUiMode.manual,
     overlays: [SystemUiOverlay.top],
   );
+
+  //! Android notification channel setup
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    importance: Importance.max,
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(channel);
+
   runApp(ProviderScope(child: AppInitializer(child: MyApp())));
 }
 
