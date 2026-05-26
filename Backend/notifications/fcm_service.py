@@ -16,7 +16,10 @@ service_account["private_key"] = (
 
 cred = credentials.Certificate(service_account)
 
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+
+print("Firebase initialized successfully")
 #* ----- MAIN Send Notification Function ----------
 
 def send_notification(fcm_token: str, task: str, gen_msg: str):
