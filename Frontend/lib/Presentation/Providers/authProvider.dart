@@ -25,9 +25,9 @@ final dioProvider = Provider<Dio>((ref) {
         debugPrint("Access Token: $token");
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
-          print('🔐 JWT attached');
+          debugPrint('🔐 JWT attached');
         } else {
-          print('⚠️ No JWT available');
+          debugPrint('⚠️ No JWT available');
         }
 
         handler.next(options);

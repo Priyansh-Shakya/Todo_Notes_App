@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todo_notes/Core/AppSounds/soundManager.dart';
+import 'package:todo_notes/Core/Connectivity/checkInternet.dart';
 import 'package:todo_notes/Core/Helpers/sharedPref.dart';
+import 'package:todo_notes/Presentation/Notifiers/todoNotifier.dart';
 
 Future<bool?> showDeleteDialog(BuildContext context) {
   return showDialog<bool>(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Core/AppSounds/soundManager.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/bottomSheet.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/createTask.dart';
@@ -61,86 +62,95 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
           );
         }
 
-        return ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: todo.length,
-          itemBuilder: (context, index) {
-            final oneTodo = todo[index];
+        return RefreshIndicator(
+          onRefresh: () => refreshScreen(notifier),
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-              child: GestureDetector(
-                onTap: () {
-                  showTodoBottomSheet(todo: oneTodo, context: context);
-                },
-                child: Card(
-                  elevation: 2,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: todo.length,
+            itemBuilder: (context, index) {
+              final oneTodo = todo[index];
 
-                    child: ListTile(
-                      leading: Text(
-                        "${index + 1}",
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 10,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    showTodoBottomSheet(todo: oneTodo, context: context);
+                  },
+                  child: Card(
+                    elevation: 2,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
 
-                      title: Text(
-                        oneTodo.task.toString(),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
+                      child: ListTile(
+                        leading: Text(
+                          "${index + 1}",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
 
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Checkbox(
-                            fillColor: WidgetStateProperty.resolveWith<Color>((
-                              states,
-                            ) {
-                              if (states.contains(WidgetState.selected)) {
-                                // when checked — red background
-                                return Colors.blue;
-                              } // when unchecked — light grey (optional)
-                              return Colors.red;
-                            }),
-                            checkColor: const Color(
-                              0xff39ff40,
-                            ), // ✅ tick mark color ),
-                            value: oneTodo.isComplete,
-                            onChanged: (bool? newVal) {
-                              SoundManager.playPopUpSound();
-                              final updateTodo = TodoEntity(
-                                id: oneTodo.id,
-                                task: oneTodo.task,
-                                isComplete: newVal ?? false,
-                              );
-                              debugPrint(
-                                "Update Todo main screen : ID${oneTodo.id} ${updateTodo.task} , ${updateTodo.isComplete}",
-                              );
-                              notifier.updateTodo(
-                                id: oneTodo.id!,
-                                todo: updateTodo,
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            color: Theme.of(context).colorScheme.error,
-                            onPressed: () async {
-                              bool? result = await showDeleteDialog(context);
-                              if (result == true) {
-                                await notifier.deleteTodo(id: oneTodo.id!);
-                              }
-                            },
-                          ),
-                        ],
+                        title: Text(
+                          oneTodo.task.toString(),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Checkbox(
+                              fillColor: WidgetStateProperty.resolveWith<Color>(
+                                (states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    // when checked — red background
+                                    return Colors.blue;
+                                  } // when unchecked — light grey (optional)
+                                  return Colors.red;
+                                },
+                              ),
+                              checkColor: const Color(
+                                0xff39ff40,
+                              ), // ✅ tick mark color ),
+                              value: oneTodo.isComplete,
+                              onChanged: (bool? newVal) {
+                                SoundManager.playPopUpSound();
+                                final updateTodo = TodoEntity(
+                                  id: oneTodo.id,
+                                  task: oneTodo.task,
+                                  isComplete: newVal ?? false,
+                                );
+                                debugPrint(
+                                  "Update Todo main screen : ID${oneTodo.id} ${updateTodo.task} , ${updateTodo.isComplete}",
+                                );
+                                notifier.updateTodo(
+                                  id: oneTodo.id!,
+                                  todo: updateTodo,
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              color: Theme.of(context).colorScheme.error,
+                              onPressed: () async {
+                                bool? result = await showDeleteDialog(context);
+                                if (result == true) {
+                                  await notifier.deleteTodo(id: oneTodo.id!);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
       error: (err, st) {
