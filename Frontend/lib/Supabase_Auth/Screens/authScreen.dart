@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
 final isLogInModeProvider = StateProvider((ref) => true);
@@ -77,7 +78,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ShimmerLoadingWidget(),
         error: (_, __) => Center(child: Text('Something went wrong.')),
       ),
     );

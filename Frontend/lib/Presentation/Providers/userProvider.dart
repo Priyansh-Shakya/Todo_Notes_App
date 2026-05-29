@@ -29,16 +29,38 @@ final authListenerProvider = Provider<void>((ref) {
 
       debugPrint("🔥 Signed in: ${user.email}");
 
+      // ✅ CREATE USER IN SUPABASE TABLE FIRST
+      try {
+        await ref.read(userNotifierProvider.notifier).createUser();
+        debugPrint("✅ USER CREATED IN SUPABASE: ${user.id}");
+      } catch (e) {
+        debugPrint("❌ ERROR CREATING USER: $e");
+      }
+
       final token = await FirebaseMessaging.instance.getToken();
 
       if (token != null) {
+        try {
+          await ref
+              .read(userNotifierProvider.notifier)
+              .updateFcmToken(token: token);
+
+          debugPrint(
+            "✅ --------------------------------------------------- Token synced after login: $token",
+          );
+        } catch (e) {
+          debugPrint("❌ ERROR UPDATING FCM TOKEN: $e");
+        }
+      }
+
+      // ✅ FETCH PERSONALIZATION DATA (userInfo + notificationTone) ON APP STARTUP
+      try {
         await ref
             .read(userNotifierProvider.notifier)
-            .updateFcmToken(token: token);
-
-        debugPrint(
-          "✅ --------------------------------------------------- Token synced after login: $token",
-        );
+            .fetchUserPersonalization();
+        debugPrint("✅ User personalization fetched and cached on startup");
+      } catch (e) {
+        debugPrint("❌ ERROR FETCHING USER PERSONALIZATION: $e");
       }
     }
   });

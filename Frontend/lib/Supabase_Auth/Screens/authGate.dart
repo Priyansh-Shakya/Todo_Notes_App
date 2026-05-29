@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
 import 'package:todo_notes/Presentation/Screens/mainScreen_bottomBar.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
@@ -21,7 +22,7 @@ class AuthGate extends ConsumerWidget {
             return const MainScreen();
           }
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ShimmerLoadingWidget(),
         error: (e, _) => Center(child: Text('Auth error: $e')),
       ),
     );

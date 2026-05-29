@@ -171,7 +171,7 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
           () => notifier.refreshList(),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ShimmerLoadingWidget(),
     );
 
     return Scaffold(

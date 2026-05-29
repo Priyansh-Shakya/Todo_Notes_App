@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Domain/Entities/noteEntity.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
+import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
 
 class NoteDetails extends ConsumerStatefulWidget {
   final int noteId;
@@ -43,7 +44,7 @@ class _NoteDetailsState extends ConsumerState<NoteDetails> {
     final notesAsync = ref.watch(noteNotifierProvider);
 
     return notesAsync.when(
-      loading: () => Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: ShimmerLoadingWidget()),
       error: (e, st) => Scaffold(body: Center(child: Text("Error: $e"))),
       data: (notes) {
         final note = notes.firstWhere(

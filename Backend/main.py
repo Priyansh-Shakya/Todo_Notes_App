@@ -170,3 +170,33 @@ async def update_userinfo(
         user_info,
         supabase
     )
+
+
+@app.get('/getuserdata')
+async def get_user_data(
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Get current user's personalization data (user_info and notification_tone).
+    Requires authentication.
+    """
+    try:
+        response = supabase.table('users').select('user_info, notification_tone').eq('user_id', user['id']).single().execute()
+        
+        if not response.data:
+            return {
+                'user_info': '{}',
+                'notification_tone': 'funny'
+            }
+        
+        return {
+            'user_info': response.data.get('user_info', '{}'),
+            'notification_tone': response.data.get('notification_tone', 'funny')
+        }
+    except Exception as e:
+        print(f"Error fetching user data: {e}")
+        return {
+            'user_info': '{}',
+            'notification_tone': 'funny'
+        }

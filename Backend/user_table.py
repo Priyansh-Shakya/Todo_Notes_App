@@ -8,7 +8,7 @@ from enum import Enum
 
 class GenToneEnum(str , Enum):
     Funny = "funny"
-    Sarcastic = "scarcastic"
+    Sarcastic = "sarcastic"
     Strict = "strict"
     Motivational = "motivational"
 

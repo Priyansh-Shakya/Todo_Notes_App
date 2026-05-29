@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_notes/Core/Fcm_Service/tokenProvider.dart';
+import 'package:todo_notes/Core/Helpers/sharedPref.dart';
 import 'package:todo_notes/Domain/Entities/userEntity.dart';
 import 'package:todo_notes/Presentation/Providers/userProvider.dart';
 
@@ -79,6 +80,9 @@ class UserNotifier extends AsyncNotifier<void> {
   Future<void> updateNotificationTone(String tone) async {
     User? user = Supabase.instance.client.auth.currentUser;
     final repo = ref.read(userRepoProvider);
+
+    // update locally in pref
+    await setNotificationTone(tone);
     if (user == null) {
       throw Exception('User not logged in');
     }
@@ -88,9 +92,39 @@ class UserNotifier extends AsyncNotifier<void> {
   Future<void> updateUserInfo(String userInfo) async {
     User? user = Supabase.instance.client.auth.currentUser;
     final repo = ref.read(userRepoProvider);
+    // update locally in pref
+    await setUserInfo(userInfo);
     if (user == null) {
       throw Exception('User not logged in');
     }
     return await repo.updateUserInfo(userInfo, user.id);
+  }
+
+  Future<String> notificationTone() async {
+    String tone = await getNotificationTone();
+    return tone;
+  }
+
+  Future<String> userInfo() async {
+    String info = await getUserInfo();
+    return info;
+  }
+
+  Future<void> fetchUserPersonalization() async {
+    try {
+      final userServiceProvider_ = ref.read(userServiceProvider);
+      final data = await userServiceProvider_.getUserPersonalization();
+
+      final userInfo = data['userInfo'] ?? '{}';
+      final notificationTone = data['notificationTone'] ?? 'funny';
+
+      // Store in SharedPrefs
+      await setUserInfo(userInfo);
+      await setNotificationTone(notificationTone);
+
+      debugPrint("✅ User personalization fetched and cached");
+    } catch (e) {
+      debugPrint("❌ Error fetching user personalization: $e");
+    }
   }
 }

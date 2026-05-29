@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
+import 'package:todo_notes/Presentation/Screens/globalUtils.dart';
 import 'package:todo_notes/Presentation/Screens/todoScreens/Utils.dart';
 
 class TodoBottomSheet extends ConsumerStatefulWidget {
@@ -30,7 +31,7 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
     final asyncNoti = ref.watch(notificationNotifierProvider);
 
     return asyncNoti.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ShimmerLoadingWidget(),
       error: (err, st) => Text("Error: $err"),
       data: (notifications) {
         // 🔥 Find the SINGLE notification you want

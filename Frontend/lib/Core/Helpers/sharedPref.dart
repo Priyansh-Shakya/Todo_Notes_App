@@ -19,3 +19,23 @@ Future<bool?> showPannelInfoShown() async {
   final pref = await SharedPreferences.getInstance();
   return pref.getBool('pannelInfoShown');
 }
+
+Future<void> setNotificationTone(String tone) async {
+  final pref = await SharedPreferences.getInstance();
+  await pref.setString('notificationTone', tone);
+}
+
+Future<String> getNotificationTone() async {
+  final pref = await SharedPreferences.getInstance();
+  return pref.getString('notificationTone') ?? 'funny';
+}
+
+Future<void> setUserInfo(String info) async {
+  final pref = await SharedPreferences.getInstance();
+  await pref.setString('userInfo', info);
+}
+
+Future<String> getUserInfo() async {
+  final pref = await SharedPreferences.getInstance();
+  return pref.getString('userInfo') ?? '{}';
+}

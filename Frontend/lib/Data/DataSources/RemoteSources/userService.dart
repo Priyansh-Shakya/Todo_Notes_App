@@ -90,4 +90,23 @@ class UserService {
       throw Exception("Something went wrong: $e");
     }
   }
+
+  Future<Map<String, dynamic>> getUserPersonalization() async {
+    try {
+      final response = await dio.get('/getuserdata');
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final data = Map<String, dynamic>.from(response.data);
+        return {
+          'userInfo': data['user_info'] ?? '{}',
+          'notificationTone': data['notification_tone'] ?? 'funny',
+        };
+      } else {
+        throw Exception("Failed to get user personalization");
+      }
+    } catch (e) {
+      throw Exception("Something went wrong: $e");
+    }
+  }
 }

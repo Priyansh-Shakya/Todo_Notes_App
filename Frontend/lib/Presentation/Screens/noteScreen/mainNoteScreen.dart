@@ -65,7 +65,7 @@ class MainNoteScreen extends ConsumerWidget {
         ],
       ),
       body: notesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ShimmerLoadingWidget(),
         error: (e, st) => wrapWithRefresh(
           context,
           showSomethingWentWrongWidget(errorDetails: e.toString()),

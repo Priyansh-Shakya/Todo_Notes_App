@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:todo_notes/Core/AppTheme/themeNotifier.dart';
+import 'package:todo_notes/Core/Helpers/sharedPref.dart';
 import 'package:todo_notes/Core/permissions.dart';
 import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authScreen.dart';
 
-// Add this provider somewhere appropriate
-final notificationToneProvider = StateProvider<String>((ref) => 'Funny');
+// Notification Tone Provider - Loads from SharedPrefs
+final notificationToneProvider = FutureProvider<String>((ref) async {
+  return await getNotificationTone();
+});
+
+// User Info Provider - Loads from SharedPrefs
+final userInfoProvider = FutureProvider<String>((ref) async {
+  return await getUserInfo();
+});
 
 class Settings extends ConsumerWidget {
   Settings({super.key});
@@ -192,39 +200,45 @@ class Settings extends ConsumerWidget {
                 // ───── Mood Selection ─────
                 Builder(
                   builder: (context) {
-                    final selectedTone = ref.watch(notificationToneProvider);
+                    final selectedToneAsync = ref.watch(
+                      notificationToneProvider,
+                    );
 
-                    final tones = [
-                      'Funny',
-                      'Sarcastic',
-                      'Motivational',
-                      'Serious',
-                    ];
+                    final toneOptions = {
+                      'funny': 'Funny',
+                      'sarcastic': 'Sarcastic',
+                      'motivational': 'Motivational',
+                      'strict': 'Serious',
+                    };
 
-                    return Column(
-                      children: tones.map((tone) {
-                        return RadioListTile<String>(
-                          value: tone,
-                          groupValue: selectedTone,
-                          title: Text(tone),
-                          activeColor: Theme.of(context).colorScheme.primary,
-                          onChanged: (value) {
-                            ref.read(notificationToneProvider.notifier).state =
-                                value!;
+                    return selectedToneAsync.when(
+                      data: (selectedTone) {
+                        return Column(
+                          children: toneOptions.entries.map((entry) {
+                            return RadioListTile<String>(
+                              value: entry.key,
+                              groupValue: selectedTone,
+                              title: Text(entry.value),
+                              activeColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              onChanged: (value) async {
+                                if (value == null) return;
 
-                            var dbVal = value.toLowerCase();
-                            if (dbVal == 'sarcastic') {
-                              dbVal = 'scarcastic';
-                            } else if (dbVal == 'serious') {
-                              dbVal = 'strict';
-                            }
-                            ref
-                                .read(userNotifierProvider.notifier)
-                                .updateNotificationTone(dbVal);
-                            debugPrint("Selected tone: $value"); // Debug print
-                          },
+                                await ref
+                                    .read(userNotifierProvider.notifier)
+                                    .updateNotificationTone(value);
+
+                                ref.invalidate(notificationToneProvider);
+                                debugPrint("Selected tone: ${entry.value}");
+                              },
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Text('Error: $err'),
                     );
                   },
                 ),
@@ -301,6 +315,14 @@ class Settings extends ConsumerWidget {
                 // TextField + Submit
                 StatefulBuilder(
                   builder: (context, setState) {
+                    // Load userInfo from provider when first building
+                    final userInfoAsync = ref.watch(userInfoProvider);
+                    userInfoAsync.whenData((userInfo) {
+                      if (controller.text.isEmpty && userInfo.isNotEmpty) {
+                        controller.text = userInfo;
+                      }
+                    });
+
                     int wordCount(String text) {
                       if (text.trim().isEmpty) return 0;
 
@@ -403,6 +425,9 @@ class Settings extends ConsumerWidget {
                               await ref
                                   .read(userNotifierProvider.notifier)
                                   .updateUserInfo(userInfo);
+
+                              // Refresh the provider to update UI
+                              ref.invalidate(userInfoProvider);
 
                               setState(() {
                                 isEditing = false;
