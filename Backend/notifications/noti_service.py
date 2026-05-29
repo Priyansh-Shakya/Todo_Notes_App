@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 from supabase import Client
-from supabase_client import supabase_admin
 from .noti_model import NotificationCreate, NotificationRead
 
 

@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -31,6 +32,7 @@ void main() async {
   );
 
   //! Android notification channel setup
+  // Create the channel
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel',
     'High Importance Notifications',
@@ -45,6 +47,39 @@ void main() async {
         AndroidFlutterLocalNotificationsPlugin
       >()
       ?.createNotificationChannel(channel);
+
+  // ✅ Initialize local notifications
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  await flutterLocalNotificationsPlugin.initialize(
+    const InitializationSettings(android: androidSettings),
+  );
+
+  // ✅ THIS IS THE KEY MISSING PART
+  // Listen to foreground FCM messages and show them manually
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    RemoteNotification? notification = message.notification;
+    AndroidNotification? android = message.notification?.android;
+
+    if (notification != null && android != null) {
+      flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+      );
+    }
+  });
 
   runApp(ProviderScope(child: AppInitializer(child: MyApp())));
 }
