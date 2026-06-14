@@ -13,25 +13,42 @@ final notificationToneProvider = FutureProvider<String>((ref) async {
   return await getNotificationTone();
 });
 
-// User Info Provider - Loads from SharedPrefs
-final userInfoProvider = FutureProvider<String>((ref) async {
-  return await getUserInfo();
-});
-
-class Settings extends ConsumerWidget {
-  Settings({super.key});
-
-  final controller = TextEditingController(); //! User info controler
+class Settings extends ConsumerStatefulWidget {
+  const Settings({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final permissionAsync = ref.watch(notificationPermissionProvider);
+  ConsumerState<Settings> createState() => _SettingsState();
+}
 
+class _SettingsState extends ConsumerState<Settings> {
+  bool isEditing = false;
+  final TextEditingController _controller = TextEditingController();
+  bool _controllerInitialized = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final permissionAsync = ref.watch(notificationPermissionProvider);
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == ThemeMode.dark;
     final user = ref.watch(userProvider);
 
-    bool isEditing = false; //! for enabling textfield of user info
+    // Sync controller ONCE when data first arrives, never while editing
+    final userInfo = ref.watch(userNotifierProvider).valueOrNull ?? '';
+    debugPrint("From settings , above -------- $userInfo");
+    if (!_controllerInitialized && userInfo.isNotEmpty) {
+      _controller.text = userInfo;
+      _controllerInitialized = true;
+    }
+    debugPrint("----------- Controller: ${_controller.text}");
+    if (_controller.text == '{}') {
+      _controller.text = '';
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings"), centerTitle: true),
@@ -62,7 +79,6 @@ class Settings extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          //? notification enable
           // ─────────────────── Notifications ───────────────────
           _SettingsCard(
             child: ListTile(
@@ -71,7 +87,6 @@ class Settings extends ConsumerWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               trailing: permissionAsync.when(
-                // Data loaded state: Show the switch based on permission status
                 data: (status) {
                   final isNoti = status.isGranted;
                   return Switch(
@@ -84,28 +99,23 @@ class Settings extends ConsumerWidget {
                     activeThumbColor: Colors.green,
                     onChanged: (value) async {
                       if (value) {
-                        // Request permission if they turned it ON
                         final newStatus = await Permission.notification
                             .request();
                         if (newStatus.isPermanentlyDenied) {
                           await openAppSettings();
                         }
                       } else {
-                        // Guide them to turn it off in settings (OS limitation)
                         await openAppSettings();
                       }
-                      // Refresh the provider to update the UI switch state
                       ref.invalidate(notificationPermissionProvider);
                     },
                   );
                 },
-                // Loading state: Show a tiny spinner while checking OS permission
                 loading: () => const SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                // Error state: Fallback disabled switch
                 error: (err, stack) =>
                     const Switch(value: false, onChanged: null),
               ),
@@ -121,7 +131,6 @@ class Settings extends ConsumerWidget {
               children: [
                 Text("Account", style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-
                 ListTile(
                   leading: const Icon(Icons.email_outlined),
                   title: Text(
@@ -129,7 +138,6 @@ class Settings extends ConsumerWidget {
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ),
-
                 if (user != null) ...[
                   const Divider(),
                   ListTile(
@@ -151,7 +159,7 @@ class Settings extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          //* ─────────────────── Auth Action ───────────────────
+          // ─────────────────── Auth Action ───────────────────
           if (user == null)
             _SettingsCard(
               child: ListTile(
@@ -171,12 +179,11 @@ class Settings extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          //* For Notifications
+          // ─────────────────── Notification Tone ───────────────────
           _SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header row
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
@@ -194,23 +201,18 @@ class Settings extends ConsumerWidget {
                     },
                   ),
                 ),
-
                 const Divider(),
-
-                // ───── Mood Selection ─────
                 Builder(
                   builder: (context) {
                     final selectedToneAsync = ref.watch(
                       notificationToneProvider,
                     );
-
                     final toneOptions = {
                       'funny': 'Funny',
                       'sarcastic': 'Sarcastic',
                       'motivational': 'Motivational',
                       'strict': 'Serious',
                     };
-
                     return selectedToneAsync.when(
                       data: (selectedTone) {
                         return Column(
@@ -224,13 +226,10 @@ class Settings extends ConsumerWidget {
                               ).colorScheme.primary,
                               onChanged: (value) async {
                                 if (value == null) return;
-
                                 await ref
                                     .read(userNotifierProvider.notifier)
                                     .updateNotificationTone(value);
-
                                 ref.invalidate(notificationToneProvider);
-                                debugPrint("Selected tone: ${entry.value}");
                               },
                             );
                           }).toList(),
@@ -242,28 +241,15 @@ class Settings extends ConsumerWidget {
                     );
                   },
                 ),
-
-                // ───── Old Default Tone Widget (kept for later) ─────
-                /*
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: ListTile(
-          leading: const Icon(Icons.notifications_active_outlined),
-          title: const Text('Notification tone'),
-          subtitle: const Text('Default'),
-          onTap: () {
-            // Open bottom sheet / picker later
-          },
-        ),
-      ),
-      */
               ],
             ),
           ),
-          SizedBox(height: 10),
+
+          const SizedBox(height: 10),
+
           _SettingsCard(
             child: Padding(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Text(
                 "Advance Settings",
                 style: Theme.of(context).textTheme.titleMedium,
@@ -271,12 +257,13 @@ class Settings extends ConsumerWidget {
             ),
           ),
 
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
+
+          // ─────────────────── Personalization ───────────────────
           _SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
@@ -309,46 +296,38 @@ class Settings extends ConsumerWidget {
                     },
                   ),
                 ),
-
                 const Divider(),
 
-                // TextField + Submit
+                // ─── TextField + Submit ───
                 StatefulBuilder(
-                  builder: (context, setState) {
-                    // Load userInfo from provider when first building
-                    final userInfoAsync = ref.watch(userInfoProvider);
-                    userInfoAsync.whenData((userInfo) {
-                      if (controller.text.isEmpty && userInfo.isNotEmpty) {
-                        controller.text = userInfo;
-                      }
-                    });
-
+                  builder: (context, setLocalState) {
                     int wordCount(String text) {
                       if (text.trim().isEmpty) return 0;
-
                       return text.trim().split(RegExp(r'\s+')).length;
                     }
 
-                    final currentWordCount = wordCount(controller.text);
-
+                    final currentWordCount = wordCount(_controller.text);
                     final isOverLimit = currentWordCount > 100;
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (isEditing) ...[
                           TextField(
-                            controller: controller,
+                            controller: _controller,
                             minLines: 3,
                             maxLines: null,
                             textInputAction: TextInputAction.newline,
                             enableInteractiveSelection: true,
-                            onChanged: (_) {
-                              setState(() {});
-                            },
+                            onChanged: (_) => setLocalState(() {}),
                             decoration: InputDecoration(
                               hintText:
                                   'Name: Jhon\nAge: 20\nOccupation: Engineer\nLanguages i speak: English , Hindi\nHobbies: Sports and Action movies\nEtc.',
+                              hintStyle: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withOpacity(0.4),
+                                  ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -375,15 +354,22 @@ class Settings extends ConsumerWidget {
                               border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(12),
                             ),
+
                             child: Text(
-                              controller.text,
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              (_controller.text.isEmpty ||
+                                      _controller.text == '{}')
+                                  ? 'No info added yet.'
+                                  : _controller.text,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: _controller.text.isEmpty
+                                        ? Colors.grey
+                                        : null,
+                                  ),
                             ),
                           ),
                         ],
                         const SizedBox(height: 8),
-
-                        // Word Counter
                         if (isEditing)
                           Align(
                             alignment: Alignment.centerRight,
@@ -395,44 +381,28 @@ class Settings extends ConsumerWidget {
                                   ),
                             ),
                           ),
-
                         const SizedBox(height: 16),
-
-                        // Submit Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // If currently viewing static text,
-                              // unlock editing mode
                               if (!isEditing) {
-                                setState(() {
-                                  isEditing = true;
-                                });
+                                setState(
+                                  () => isEditing = true,
+                                ); // setState from State class
                                 return;
                               }
-
-                              // Validation
                               if (isOverLimit ||
-                                  controller.text.trim().isEmpty) {
+                                  _controller.text.trim().isEmpty)
                                 return;
-                              }
-
-                              final userInfo = controller.text.trim();
-
-                              debugPrint("Submitted info: $userInfo");
 
                               await ref
                                   .read(userNotifierProvider.notifier)
-                                  .updateUserInfo(userInfo);
+                                  .updateUserInfo(_controller.text.trim());
 
-                              // Refresh the provider to update UI
-                              ref.invalidate(userInfoProvider);
-
-                              setState(() {
-                                isEditing = false;
-                              });
-
+                              setState(
+                                () => isEditing = false,
+                              ); // setState from State class
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -441,8 +411,9 @@ class Settings extends ConsumerWidget {
                                 ),
                               );
                             },
-
-                            child: isEditing ? Text('Submit') : Text("Update"),
+                            child: isEditing
+                                ? const Text('Submit')
+                                : const Text('Update'),
                           ),
                         ),
                       ],

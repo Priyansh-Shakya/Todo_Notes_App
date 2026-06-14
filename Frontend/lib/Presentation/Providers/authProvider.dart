@@ -9,7 +9,7 @@ final dioProvider = Provider<Dio>((ref) {
       // Replace with your actual backend URL : https://todo-notes-app-backend-fastapi.onrender.com/
       //USB Debugging , Physical device URL: 'http://192.168.29.138:8000/'
       baseUrl:
-          'http://192.168.29.138:8000/', //'https://todo-notes-app-backend-fastapi.onrender.com/',
+          'https://todo-notes-app-backend-fastapi.onrender.com/',
 
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> storeSelectedScreen(int index) async {
@@ -37,5 +38,7 @@ Future<void> setUserInfo(String info) async {
 
 Future<String> getUserInfo() async {
   final pref = await SharedPreferences.getInstance();
-  return pref.getString('userInfo') ?? '{}';
+  final info = pref.getString('userInfo') ?? '';
+  debugPrint("Retrieved user info from SharedPreferences: $info");
+  return info;
 }

@@ -6,15 +6,16 @@ import 'package:todo_notes/Core/Helpers/sharedPref.dart';
 import 'package:todo_notes/Domain/Entities/userEntity.dart';
 import 'package:todo_notes/Presentation/Providers/userProvider.dart';
 
-final userNotifierProvider = AsyncNotifierProvider<UserNotifier, void>(
+final userNotifierProvider = AsyncNotifierProvider<UserNotifier, String>(
   UserNotifier.new,
 );
 
-class UserNotifier extends AsyncNotifier<void> {
+class UserNotifier extends AsyncNotifier<String> {
   @override
-  Future<void> build() async {
-    // No need to return anything, we just want to trigger a rebuild when the user changes
-    return;
+  Future<String> build() async {
+    final info = await getUserInfo(); //! sends userInfo in setting UI
+    debugPrint("From Notifier build -------------- $info");
+    return info;
   }
 
   Future<void> createUser() async {
@@ -118,9 +119,14 @@ class UserNotifier extends AsyncNotifier<void> {
       final userInfo = data['userInfo'] ?? '{}';
       final notificationTone = data['notificationTone'] ?? 'funny';
 
+      debugPrint(
+        "From notifier - Fetched user personalization: userInfo: $userInfo, notificationTone: $notificationTone",
+      );
       // Store in SharedPrefs
       await setUserInfo(userInfo);
       await setNotificationTone(notificationTone);
+
+      state = AsyncValue.data(userInfo);
 
       debugPrint("✅ User personalization fetched and cached");
     } catch (e) {
