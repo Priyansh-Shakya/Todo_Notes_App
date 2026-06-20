@@ -13,8 +13,11 @@ final userNotifierProvider = AsyncNotifierProvider<UserNotifier, String>(
 class UserNotifier extends AsyncNotifier<String> {
   @override
   Future<String> build() async {
-    final info = await getUserInfo(); //! sends userInfo in setting UI
-    debugPrint("From Notifier build -------------- $info");
+    // Return cached userInfo for the currently signed-in user (device fallback when no user)
+    final user = Supabase.instance.client.auth.currentUser;
+    final userId = user?.id;
+    final info = await getUserInfo(userId: userId);
+    debugPrint("From Notifier build -------------- $info (userId=$userId)");
     return info;
   }
 
@@ -82,8 +85,8 @@ class UserNotifier extends AsyncNotifier<String> {
     User? user = Supabase.instance.client.auth.currentUser;
     final repo = ref.read(userRepoProvider);
 
-    // update locally in pref
-    await setNotificationTone(tone);
+    // update locally in pref (user-scoped if logged in)
+    await setNotificationTone(tone, userId: user?.id);
     if (user == null) {
       throw Exception('User not logged in');
     }
@@ -93,8 +96,8 @@ class UserNotifier extends AsyncNotifier<String> {
   Future<void> updateUserInfo(String userInfo) async {
     User? user = Supabase.instance.client.auth.currentUser;
     final repo = ref.read(userRepoProvider);
-    // update locally in pref
-    await setUserInfo(userInfo);
+    // update locally in pref (user-scoped if logged in)
+    await setUserInfo(userInfo, userId: user?.id);
     if (user == null) {
       throw Exception('User not logged in');
     }
@@ -102,12 +105,14 @@ class UserNotifier extends AsyncNotifier<String> {
   }
 
   Future<String> notificationTone() async {
-    String tone = await getNotificationTone();
+    final user = Supabase.instance.client.auth.currentUser;
+    final tone = await getNotificationTone(userId: user?.id);
     return tone;
   }
 
   Future<String> userInfo() async {
-    String info = await getUserInfo();
+    final user = Supabase.instance.client.auth.currentUser;
+    final info = await getUserInfo(userId: user?.id);
     return info;
   }
 
@@ -122,9 +127,11 @@ class UserNotifier extends AsyncNotifier<String> {
       debugPrint(
         "From notifier - Fetched user personalization: userInfo: $userInfo, notificationTone: $notificationTone",
       );
-      // Store in SharedPrefs
-      await setUserInfo(userInfo);
-      await setNotificationTone(notificationTone);
+      // Store in SharedPrefs using current user id (device fallback if not signed in)
+      final user = Supabase.instance.client.auth.currentUser;
+      final userId = user?.id;
+      await setUserInfo(userInfo, userId: userId);
+      await setNotificationTone(notificationTone, userId: userId);
 
       state = AsyncValue.data(userInfo);
 

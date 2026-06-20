@@ -21,24 +21,30 @@ Future<bool?> showPannelInfoShown() async {
   return pref.getBool('pannelInfoShown');
 }
 
-Future<void> setNotificationTone(String tone) async {
+// User-scoped SharedPrefs helpers: accept optional userId. If userId is null,
+// fall back to device-level keys for backwards compatibility.
+Future<void> setNotificationTone(String tone, {String? userId}) async {
   final pref = await SharedPreferences.getInstance();
-  await pref.setString('notificationTone', tone);
+  final key = userId == null ? 'notificationTone' : 'notificationTone_\$userId';
+  await pref.setString(key, tone);
 }
 
-Future<String> getNotificationTone() async {
+Future<String> getNotificationTone({String? userId}) async {
   final pref = await SharedPreferences.getInstance();
-  return pref.getString('notificationTone') ?? 'funny';
+  final key = userId == null ? 'notificationTone' : 'notificationTone_\$userId';
+  return pref.getString(key) ?? 'funny';
 }
 
-Future<void> setUserInfo(String info) async {
+Future<void> setUserInfo(String info, {String? userId}) async {
   final pref = await SharedPreferences.getInstance();
-  await pref.setString('userInfo', info);
+  final key = userId == null ? 'userInfo' : 'userInfo_\$userId';
+  await pref.setString(key, info);
 }
 
-Future<String> getUserInfo() async {
+Future<String> getUserInfo({String? userId}) async {
   final pref = await SharedPreferences.getInstance();
-  final info = pref.getString('userInfo') ?? '';
-  debugPrint("Retrieved user info from SharedPreferences: $info");
+  final key = userId == null ? 'userInfo' : 'userInfo_\$userId';
+  final info = pref.getString(key) ?? '';
+  debugPrint("Retrieved user info from SharedPreferences (key=\$key): $info");
   return info;
 }

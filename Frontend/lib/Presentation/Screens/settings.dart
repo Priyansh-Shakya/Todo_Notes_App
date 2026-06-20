@@ -8,14 +8,18 @@ import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 import 'package:todo_notes/Supabase_Auth/Screens/authScreen.dart';
 
-// Notification Tone Provider - Loads from SharedPrefs
+// Notification Tone Provider - Loads per-user from SharedPrefs (falls back to device-level)
 final notificationToneProvider = FutureProvider<String>((ref) async {
-  return await getNotificationTone();
+  final user = ref.watch(userProvider);
+  final userId = user?.id;
+  return await getNotificationTone(userId: userId);
 });
 
-// User Info Provider - Loads from SharedPrefs
+// User Info Provider - Loads per-user from SharedPrefs (falls back to device-level)
 final userInfoProvider = FutureProvider<String>((ref) async {
-  return await getUserInfo();
+  final user = ref.watch(userProvider);
+  final userId = user?.id;
+  return await getUserInfo(userId: userId);
 });
 
 class Settings extends ConsumerStatefulWidget {
@@ -40,7 +44,11 @@ class _SettingsState extends ConsumerState<Settings> {
   Widget build(BuildContext context) {
     final permissionAsync = ref.watch(notificationPermissionProvider);
     final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == ThemeMode.dark;
+    final platformBrightness = MediaQuery.platformBrightnessOf(context);
+    final isDark =
+        themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            platformBrightness == Brightness.dark);
     final user = ref.watch(userProvider);
 
     // Sync controller ONCE when data first arrives, never while editing
