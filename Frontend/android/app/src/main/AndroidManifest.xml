@@ -44,7 +44,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:scheme="com.example.todo_notes"
+                    android:scheme="com.drdwarfstudios.todo_notes"
                     android:host="login-callback"/>
             </intent-filter>
 

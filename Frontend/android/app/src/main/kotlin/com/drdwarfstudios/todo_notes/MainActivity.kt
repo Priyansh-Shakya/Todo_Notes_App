@@ -1,4 +1,4 @@
-package com.example.todo_notes
+package com.drdwarfstudios.todo_notes
 
 import io.flutter.embedding.android.FlutterActivity
 

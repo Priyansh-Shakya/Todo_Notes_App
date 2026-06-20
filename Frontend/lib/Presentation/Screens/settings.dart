@@ -13,6 +13,11 @@ final notificationToneProvider = FutureProvider<String>((ref) async {
   return await getNotificationTone();
 });
 
+// User Info Provider - Loads from SharedPrefs
+final userInfoProvider = FutureProvider<String>((ref) async {
+  return await getUserInfo();
+});
+
 class Settings extends ConsumerStatefulWidget {
   const Settings({super.key});
 
@@ -39,12 +44,14 @@ class _SettingsState extends ConsumerState<Settings> {
     final user = ref.watch(userProvider);
 
     // Sync controller ONCE when data first arrives, never while editing
-    final userInfo = ref.watch(userNotifierProvider).valueOrNull ?? '';
-    debugPrint("From settings , above -------- $userInfo");
-    if (!_controllerInitialized && userInfo.isNotEmpty) {
-      _controller.text = userInfo;
-      _controllerInitialized = true;
-    }
+    final userInfoAsync = ref.watch(userInfoProvider);
+    userInfoAsync.whenData((info) {
+      debugPrint("From settings , above -------- $info");
+      if (!_controllerInitialized && info.isNotEmpty) {
+        _controller.text = info;
+        _controllerInitialized = true;
+      }
+    });
     debugPrint("----------- Controller: ${_controller.text}");
     if (_controller.text == '{}') {
       _controller.text = '';
@@ -399,17 +406,50 @@ class _SettingsState extends ConsumerState<Settings> {
                               await ref
                                   .read(userNotifierProvider.notifier)
                                   .updateUserInfo(_controller.text.trim());
-
-                              setState(
-                                () => isEditing = false,
-                              ); // setState from State class
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Information saved successfully',
+                              ref.invalidate(userInfoProvider);
+                              setState(() {
+                                isEditing = false;
+                              }); // setState from State class
+                              // ScaffoldMessenger.of(context).showSnackBar(
+                              //   const SnackBar(
+                              //     content: Text(
+                              //       'Information saved successfully',
+                              //     ),
+                              //   ),
+                              // );
+                              ScaffoldMessenger.of(context).showMaterialBanner(
+                                MaterialBanner(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
                                   ),
+                                  backgroundColor: Colors.white,
+                                  surfaceTintColor: Colors.transparent,
+
+                                  content: const Text(
+                                    'Information saved successfully',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  actions: [
+                                    IconButton(
+                                      icon: const Icon(Icons.close, size: 18),
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).hideCurrentMaterialBanner();
+                                      },
+                                    ),
+                                  ],
                                 ),
                               );
+
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentMaterialBanner();
+                                }
+                              });
                             },
                             child: isEditing
                                 ? const Text('Submit')
