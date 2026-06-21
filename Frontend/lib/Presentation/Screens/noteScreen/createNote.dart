@@ -73,18 +73,19 @@ class _CreateNoteState extends ConsumerState<CreateNote> {
           IconButton(onPressed: createNote, icon: Icon(Icons.check)),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: titleCtr,
-              decoration: InputDecoration(labelText: "Title"),
+              decoration: const InputDecoration(labelText: "Title"),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: contentCtr,
-              decoration: InputDecoration(labelText: "Content"),
+              decoration: const InputDecoration(labelText: "Content"),
               maxLines: null,
             ),
           ],

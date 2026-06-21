@@ -427,16 +427,18 @@ class _SettingsState extends ConsumerState<Settings> {
                               // );
                               ScaffoldMessenger.of(context).showMaterialBanner(
                                 MaterialBanner(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding: EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 4,
                                   ),
                                   backgroundColor: Colors.white,
                                   surfaceTintColor: Colors.transparent,
 
-                                  content: const Text(
+                                  content: Text(
                                     'Information saved successfully',
-                                    style: TextStyle(fontSize: 14),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                   ),
                                   actions: [
                                     IconButton(
