@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:todo_notes/Core/Connectivity/checkInternet.dart';
+import 'package:todo_notes/Core/appBootstrap.dart';
 
 class ShimmerLoadingWidget extends StatefulWidget {
   const ShimmerLoadingWidget({super.key});
@@ -166,8 +167,10 @@ Widget showSomethingWentWrongWidget({String? errorDetails}) {
   );
 }
 
-void showRefreshNoInternetBanner(BuildContext context) {
-  final messenger = ScaffoldMessenger.of(context);
+void showRefreshNoInternetBanner() {
+  final messenger = rootScaffoldMessengerKey.currentState;
+  if (messenger == null) return; // not mounted yet, bail safely
+
   messenger.clearMaterialBanners();
   messenger.showMaterialBanner(
     MaterialBanner(
@@ -194,7 +197,7 @@ Future<void> refreshScreenWithInternetCheck(
 ) async {
   final bool isConnected = await checkInternetConnection();
   if (!isConnected) {
-    showRefreshNoInternetBanner(context);
+    showRefreshNoInternetBanner();
     return;
   }
 

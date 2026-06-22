@@ -8,11 +8,16 @@ from models import WriteNote , ReadNote , UpdateNote
 
 
 
-
 async def read_notes(user, supabase: Client):
-    response = supabase.table('notes').select("*").eq('user_id', user['id']).execute()
+    response = (
+        supabase.table('notes')
+        .select("*")
+        .eq('user_id', user['id'])
+        .order('isPinned', desc=True)
+        .order('created_at', desc=True)
+        .execute()
+    )
     return [ReadNote(**row) for row in response.data]
-
 
 
 

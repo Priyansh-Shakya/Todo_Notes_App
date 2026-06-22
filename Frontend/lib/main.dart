@@ -97,6 +97,8 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
+
       theme: AppTheme.light,
 
       darkTheme: AppTheme.dark,
