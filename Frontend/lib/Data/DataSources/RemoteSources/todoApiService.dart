@@ -71,6 +71,23 @@ class TodoService {
     }
   }
 
+  // edit todo (separate endpoint for richer edit semantics)
+  Future<TodoModel> editTodo({
+    required TodoModel todo,
+    required int id,
+  }) async {
+    try {
+      final response = await dio.put('/edittodo/$id', data: todo.toJson());
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        return TodoModel.fromJson(Map<String, dynamic>.from(response.data));
+      } else {
+        throw Exception("Failed to edit todo: ${response.statusCode}");
+      }
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    }
+  }
+
   Future<void> deleteTodo({required int id}) async {
     try {
       final response = await dio.delete('/deletetodo/$id');

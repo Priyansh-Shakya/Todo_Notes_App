@@ -30,7 +30,8 @@ class Settings extends ConsumerStatefulWidget {
 }
 
 class _SettingsState extends ConsumerState<Settings> {
-  bool isEditing = false;
+  bool isEditing =
+      true; // Start in editing mode to allow user to input info immediately
   final TextEditingController _controller = TextEditingController();
   bool _controllerInitialized = false;
 
@@ -71,7 +72,7 @@ class _SettingsState extends ConsumerState<Settings> {
         padding: const EdgeInsets.all(16),
         children: [
           // ─────────────────── Appearance ───────────────────
-          _SettingsCard(
+          SettingsCard(
             child: ListTile(
               title: Text(
                 "Dark Mode",
@@ -95,7 +96,7 @@ class _SettingsState extends ConsumerState<Settings> {
           const SizedBox(height: 20),
 
           // ─────────────────── Notifications ───────────────────
-          _SettingsCard(
+          SettingsCard(
             child: ListTile(
               title: Text(
                 "Notifications",
@@ -140,7 +141,7 @@ class _SettingsState extends ConsumerState<Settings> {
           const SizedBox(height: 20),
 
           // ─────────────────── Account ───────────────────
-          _SettingsCard(
+          SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -176,7 +177,7 @@ class _SettingsState extends ConsumerState<Settings> {
 
           // ─────────────────── Auth Action ───────────────────
           if (user == null)
-            _SettingsCard(
+            SettingsCard(
               child: ListTile(
                 leading: const Icon(Icons.login, color: Colors.red),
                 title: const Text(
@@ -195,7 +196,7 @@ class _SettingsState extends ConsumerState<Settings> {
           const SizedBox(height: 20),
 
           // ─────────────────── Notification Tone ───────────────────
-          _SettingsCard(
+          SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -262,7 +263,7 @@ class _SettingsState extends ConsumerState<Settings> {
 
           const SizedBox(height: 10),
 
-          _SettingsCard(
+          SettingsCard(
             child: Padding(
               padding: const EdgeInsets.all(10),
               child: Text(
@@ -275,7 +276,7 @@ class _SettingsState extends ConsumerState<Settings> {
           const SizedBox(height: 15),
 
           // ─────────────────── Personalization ───────────────────
-          _SettingsCard(
+          SettingsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -417,22 +418,20 @@ class _SettingsState extends ConsumerState<Settings> {
                               ref.invalidate(userInfoProvider);
                               setState(() {
                                 isEditing = false;
-                              }); // setState from State class
-                              // ScaffoldMessenger.of(context).showSnackBar(
-                              //   const SnackBar(
-                              //     content: Text(
-                              //       'Information saved successfully',
-                              //     ),
-                              //   ),
-                              // );
+                              });
                               ScaffoldMessenger.of(context).showMaterialBanner(
                                 MaterialBanner(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 4,
                                   ),
-                                  backgroundColor: Colors.white,
-                                  surfaceTintColor: Colors.transparent,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  surfaceTintColor: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withOpacity(0.1),
 
                                   content: Text(
                                     'Information saved successfully',
@@ -480,10 +479,10 @@ class _SettingsState extends ConsumerState<Settings> {
 }
 
 /// Reusable settings card
-class _SettingsCard extends StatelessWidget {
+class SettingsCard extends StatelessWidget {
   final Widget child;
 
-  const _SettingsCard({required this.child});
+  const SettingsCard({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

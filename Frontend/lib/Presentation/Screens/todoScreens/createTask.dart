@@ -49,7 +49,7 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
         isComplete: false,
       );
 
-      print("Task : ${taskCtr.text}");
+      debugPrint("Task : ${taskCtr.text}");
 
       final ready = notiData.isReady(type);
       debugPrint("Create task notification type:$type");
@@ -139,6 +139,8 @@ class _CreateTaskState extends ConsumerState<CreateTask> {
               ),
 
               SizedBox(height: 35),
+
+              SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,

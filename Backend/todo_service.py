@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from models import WriteTodo, ReadTodo, UpdateTodo
+from models import WriteTodo, ReadTodo, UpdateTodo , EditTodo
 from supabase import Client
 from supabase_client import supabase_user
 
@@ -35,6 +35,22 @@ async def write_todo(todo: WriteTodo, user, supabase: Client):
 
 
 async def update_todo(id: int, todo: UpdateTodo, user, supabase: Client):
+    response = (
+        supabase
+        .table("todos")
+        .update(todo.model_dump(exclude_unset=True))
+        .eq("id", id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    return ReadTodo(**response.data[0])
+
+
+async def edit_todo(id: int, todo: EditTodo, user, supabase: Client):
     response = (
         supabase
         .table("todos")

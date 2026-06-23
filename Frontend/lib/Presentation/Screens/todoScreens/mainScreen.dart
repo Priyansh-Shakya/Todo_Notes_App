@@ -89,7 +89,11 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    showTodoBottomSheet(todo: oneTodo, context: context);
+                    showTodoBottomSheet(
+                      todo: oneTodo,
+                      isEditMode: false,
+                      context: context,
+                    );
                   },
                   child: Card(
                     elevation: 2,
@@ -113,6 +117,17 @@ class _MainTodoScreenState extends ConsumerState<MainTodoScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              onPressed: () {
+                                showTodoBottomSheet(
+                                  todo: oneTodo,
+                                  isEditMode: true,
+                                  context: context,
+                                );
+                              },
+                              icon: Icon(Icons.edit),
+                            ),
+
                             Checkbox(
                               fillColor: WidgetStateProperty.resolveWith<Color>(
                                 (states) {

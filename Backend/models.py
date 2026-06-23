@@ -22,7 +22,8 @@ class UpdateTodo(TodoBase):
     task:str | None = None
     is_complete:bool | None = None
 
-
+class EditTodo(TodoBase):
+    pass
 
 ## Note Models --------------------------------------------------------------
 

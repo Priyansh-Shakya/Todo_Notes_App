@@ -8,7 +8,7 @@ import note_service
 from notifications.noti_model import NotificationCreate, NotificationRead
 from notifications.noti_service import get_notifications, set_notification
 import todo_service
-from models import ReadNote, UpdateNote, WriteNote, WriteTodo, ReadTodo, UpdateTodo
+from models import EditTodo, ReadNote, UpdateNote, WriteNote, WriteTodo, ReadTodo, UpdateTodo
 from auth import get_current_user
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -79,6 +79,16 @@ async def update_todo(
     user=Depends(get_current_user)
 ):
     return await todo_service.update_todo(id, todo, user, supabase)
+
+
+@app.put("/edittodo/{id}", response_model=ReadTodo)
+async def edit_todo(
+    id: int,
+    todo: EditTodo,
+    supabase: Client = Depends(get_supabase_client),
+    user=Depends(get_current_user)
+):
+    return await todo_service.edit_todo(id, todo, user, supabase)
 
 @app.delete("/deletetodo/{id}", response_model=ReadTodo)
 async def delete_todo(
