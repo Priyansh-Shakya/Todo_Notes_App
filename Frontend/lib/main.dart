@@ -98,7 +98,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
 
       scaffoldMessengerKey: rootScaffoldMessengerKey,
-
+      navigatorKey: navigatorKey,
       theme: AppTheme.light,
 
       darkTheme: AppTheme.dark,

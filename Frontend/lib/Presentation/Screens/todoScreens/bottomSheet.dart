@@ -91,7 +91,30 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
     }
 
     // times from backend may be ISO-like strings (e.g. "10:30:00"); store as-is
-    _selectedTimes.addAll(notification.times);
+    // Normalize times: backend may send a list of strings or a single comma-separated string.
+    for (final raw in notification.times) {
+      // remove surrounding brackets or quotes if any, then split by comma
+      final cleaned = raw.toString().replaceAll(RegExp(r'[\[\]\"]'), '');
+      if (cleaned.contains(',')) {
+        final parts = cleaned.split(',');
+        for (final p in parts) {
+          final t = p.trim();
+          if (t.isNotEmpty) _selectedTimes.add(t);
+        }
+      } else {
+        final t = cleaned.trim();
+        if (t.isNotEmpty) _selectedTimes.add(t);
+      }
+    }
+    // dedupe while preserving order
+    final seen = <String>{};
+    final deduped = <String>[];
+    for (final t in _selectedTimes) {
+      if (seen.add(t)) deduped.add(t);
+    }
+    _selectedTimes
+      ..clear()
+      ..addAll(deduped);
   }
 
   Future<void> _pickDate() async {
@@ -114,7 +137,11 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
       initialTime: TimeOfDay.now(),
     );
     if (picked != null) {
-      setState(() => _selectedTimes.add(picked.toString()));
+      // Convert TimeOfDay to backend-friendly HH:MM:SS (e.g., "10:30:00")
+      final hour = picked.hour.toString().padLeft(2, '0');
+      final minute = picked.minute.toString().padLeft(2, '0');
+      final formatted = '$hour:$minute:00';
+      setState(() => _selectedTimes.add(formatted));
     }
   }
 
@@ -316,6 +343,8 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
     final weekDays = notification?.weekdays;
     final time = notification?.times;
 
+    debugPrint("Notification on: $isNotiOn");
+
     return Column(
       children: [
         showCard("Task", Text(widget.todo.task), context),
@@ -325,7 +354,14 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
           height: 70,
           child: showCard(
             "Notifications",
-            Switch(value: isNotiOn, onChanged: null),
+            IgnorePointer(
+              child: Switch(
+                value: isNotiOn,
+                activeThumbColor: Colors.green,
+                inactiveThumbColor: Colors.red,
+                onChanged: (_) {},
+              ),
+            ),
             context,
           ),
         ),

@@ -49,17 +49,17 @@ String formatTimes(List<String>? times) {
 
   return times
       .map((t) {
-        final parts = t.split(':');
-        if (parts.length < 2) return t;
+        // Extract HH:MM (with optional :SS) from various possible formats
+        // Examples handled: "10:30:00", "10:30", "TimeOfDay(10:30)"
+        final match = RegExp(r"(\d{1,2}):(\d{2})(?::\d{2})?").firstMatch(t);
+        if (match == null) return t;
 
-        final hour24 = int.tryParse(parts[0]);
-        final minute = parts[1];
-
+        final hour24 = int.tryParse(match.group(1)!);
+        final minute = match.group(2)!;
         if (hour24 == null) return t;
 
         final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
         final amPm = hour24 >= 12 ? 'PM' : 'AM';
-
         return '$hour12:$minute $amPm';
       })
       .join(', ');

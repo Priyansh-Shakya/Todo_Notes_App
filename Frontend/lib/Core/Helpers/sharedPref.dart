@@ -48,3 +48,14 @@ Future<String> getUserInfo({String? userId}) async {
   debugPrint("Retrieved user info from SharedPreferences (key=\$key): $info");
   return info;
 }
+
+//! User info adding banner "Dont show again"
+Future<void> userInfoSetDontShowAgain() async {
+  final pref = await SharedPreferences.getInstance();
+  await pref.setBool("userInfoBannerDontShowAgain", true);
+}
+
+Future<bool> userInfoGetDontShowAgain() async {
+  final pref = await SharedPreferences.getInstance();
+  return pref.getBool("userInfoBannerDontShowAgain") ?? false;
+}

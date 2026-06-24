@@ -1,10 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_notes/Core/Helpers/sharedPref.dart';
+import 'package:todo_notes/Core/appBootstrap.dart';
 import 'package:todo_notes/Data/DataSources/RemoteSources/userService.dart';
 import 'package:todo_notes/Data/Repositories/userRepo.dart';
 import 'package:todo_notes/Presentation/Notifiers/userNotifier.dart';
 import 'package:todo_notes/Presentation/Providers/authProvider.dart';
+import 'package:todo_notes/Presentation/Screens/settings.dart';
 import 'package:todo_notes/Supabase_Auth/Logic/authProvider.dart';
 
 final userServiceProvider = Provider<UserService>((ref) {
@@ -62,6 +65,30 @@ final authListenerProvider = Provider<void>((ref) {
       } catch (e) {
         debugPrint("❌ ERROR FETCHING USER PERSONALIZATION: $e");
       }
+
+      //* Check if user_info is cached or not.
+
+      final dontShowAGain = await userInfoGetDontShowAgain(); // bool
+
+      final context = navigatorKey.currentContext;
+      ref.invalidate(userInfoProvider);
+      final userInfoAsync = ref.read(userInfoProvider);
+      userInfoAsync.whenData((info) {
+        debugPrint("=========================== From User_Provider: $info");
+        if ((info.isEmpty || info == '') && dontShowAGain == false) {
+          debugPrint("---------------------- Showing user info banner");
+          if (context != null) {
+            Future.delayed(Duration(seconds: 3));
+            showDialog(
+              context: context,
+              builder: (_) => showUserInfoAddBanner(
+                context: context,
+                onDontShowAgain: userInfoSetDontShowAgain,
+              ),
+            );
+          }
+        }
+      });
     }
   });
 });
