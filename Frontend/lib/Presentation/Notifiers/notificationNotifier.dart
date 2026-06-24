@@ -45,6 +45,7 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
         prev.where((n) => n.taskId != noti.taskId).toList(),
       );
     }
+    
   }
 
   /// 🔥 THE IMPORTANT PART

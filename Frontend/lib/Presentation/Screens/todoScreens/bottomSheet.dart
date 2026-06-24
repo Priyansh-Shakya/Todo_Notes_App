@@ -127,7 +127,10 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
     );
     if (picked != null) {
-      setState(() => _selectedDate = createdAtSliced(picked.toString()));
+      setState(() {
+        // store canonical ISO date, e.g. "2026-07-15" — this is what the backend gets
+        _selectedDate = picked.toIso8601String().split('T').first;
+      });
     }
   }
 
@@ -182,6 +185,7 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
       _showSnack('Failed to update task');
     }
   }
+  
 
   Future<void> _persistNotification(NotificationModel? existing) async {
     if (!_isNotiOn) {
@@ -318,7 +322,12 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
                     child: SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () => _onSave(notification),
+                        onPressed: () {
+                          ref
+                              .read(notificationNotifierProvider.notifier)
+                              .refreshList();
+                          _onSave(notification);
+                        },
                         child: const Text('Save'),
                       ),
                     ),
@@ -435,7 +444,9 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
                 child: Text(
                   _selectedDate == null
                       ? 'Pick date'
-                      : createdAtSliced(_selectedDate.toString()),
+                      : createdAtSliced(
+                          _selectedDate!,
+                        ), // format exactly ONCE, on the canonical ISO value
                 ),
               ),
               context,

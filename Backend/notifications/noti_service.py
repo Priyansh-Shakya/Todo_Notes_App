@@ -9,12 +9,15 @@ async def set_notification(noti: NotificationCreate, supabase: Client) -> Notifi
     response = (
         supabase
         .table("notification_schedules")
-        .insert(noti.model_dump(exclude_none=True))
+        .upsert(
+            noti.model_dump(exclude_none=True), 
+            on_conflict="task_id"  # Tells Supabase to overwrite if task_id exists
+        )
         .execute()
     )
 
-    noti =  NotificationRead(**response.data[0])
-    # schedule_notiication(noti)   Not needed yet (FUTURE)
+    noti = NotificationRead(**response.data[0])
+    # schedule_notification(noti)   Not needed yet (FUTURE)
     return noti
 
 
