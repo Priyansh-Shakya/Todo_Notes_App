@@ -18,7 +18,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
-import 'package:todo_notes/Data/Models/todoModel.dart';
 import 'package:todo_notes/Domain/Entities/todoEntity.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
 import 'package:todo_notes/Presentation/Providers/todoProvider.dart';
@@ -169,32 +168,33 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
     if (newTask == widget.todo.task) return;
     if (widget.todo.id == null) return;
     try {
-      final repo = ref.read(todoRepoProvider);
-      final todoModel = TodoModel(
+      final todoModel = TodoEntity(
         task: newTask,
         isComplete: widget.todo.isComplete,
         id: widget.todo.id,
         createdAt: widget.todo.createdAt,
       );
-      // Use editT to call backend /edittodo (supports richer edit semantics)
-      await repo.editT(todo: todoModel, id: widget.todo.id!);
+      //? API to update Todo
+      await ref
+          .read(todoNotifierProvider.notifier)
+          .updateTodo(todo: todoModel, id: todoModel.id!);
+      debugPrint(" ++++++++++++++++++++++++ Sending update todo API ");
 
-      // refresh todo list
-      await ref.read(todoNotifierProvider.notifier).refreshList();
+      // pop off bottom sheet
+      Navigator.of(context).pop();
     } catch (e) {
       _showSnack('Failed to update task');
     }
   }
-  
 
   Future<void> _persistNotification(NotificationModel? existing) async {
-    if (!_isNotiOn) {
-      if (existing != null) {
-        // TODO: await ref.read(notificationNotifierProvider.notifier)
-        //           .deleteNotification(existing.id);
-      }
-      return;
-    }
+    // if (!_isNotiOn) {
+    //   if (existing != null) {
+    //     // TODO: await ref.read(notificationNotifierProvider.notifier)
+    //     //           .deleteNotification(existing.id);
+    //   }
+    //   return;
+    // }
 
     final service = ref.read(notificcationServiceProvider);
 
@@ -211,10 +211,17 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
     try {
       // send (backend currently supports insert via /setnoti)
       if (widget.todo.id == null) return;
-      await service.sendTaskNotification(payload, widget.todo.id!);
+      //? API to update Notificatoin (UPSERT)
+
+      await ref
+          .read(notificationNotifierProvider.notifier)
+          .upsertLocal(payload);
+      debugPrint(" ++++++++++++++++++++++++ Sending update notification API ");
+
+      //await service.sendTaskNotification(payload, widget.todo.id!);
 
       // Refresh notification list
-      await ref.read(notificationNotifierProvider.notifier).refreshList();
+      // await ref.read(notificationNotifierProvider.notifier).refreshList();
     } catch (e) {
       _showSnack('Failed to save notification');
     }
@@ -284,8 +291,10 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.85,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.70,
+            ),
             child: Column(
               children: [
                 const SizedBox(height: 10),
@@ -399,13 +408,21 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
       children: [
         showCard(
           "Task",
-          TextField(
-            controller: _taskController,
-            textAlign: TextAlign.end,
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              hintText: 'Task name',
+
+          TapRegion(
+            onTapOutside: (_) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+
+            child: TextField(
+              controller: _taskController,
+              textAlign: TextAlign.end,
+              maxLines: null,
+              decoration: const InputDecoration(
+                isDense: false,
+                border: InputBorder.none,
+                hintText: 'Task name',
+              ),
             ),
           ),
           context,

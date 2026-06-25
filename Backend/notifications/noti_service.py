@@ -6,19 +6,16 @@ from .noti_model import NotificationCreate, NotificationRead
 # from notifications.scheduler.schedule_task_noti import schedule_notiication
 
 async def set_notification(noti: NotificationCreate, supabase: Client) -> NotificationRead:
+    payload = noti.model_dump()  # no exclude_none — we need the explicit nulls to reach the DB
+
     response = (
         supabase
         .table("notification_schedules")
-        .upsert(
-            noti.model_dump(exclude_none=True), 
-            on_conflict="task_id"  # Tells Supabase to overwrite if task_id exists
-        )
+        .upsert(payload, on_conflict="task_id")
         .execute()
     )
 
-    noti = NotificationRead(**response.data[0])
-    # schedule_notification(noti)   Not needed yet (FUTURE)
-    return noti
+    return NotificationRead(**response.data[0])
 
 
 async def get_notifications(user, supabase: Client) -> list[NotificationRead]:

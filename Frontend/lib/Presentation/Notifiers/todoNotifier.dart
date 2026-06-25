@@ -76,7 +76,7 @@ class TodoNotifier extends AsyncNotifier<List<TodoEntity>> {
         noti = noti.copyWith(timezone: tz);
         ref
             .read(notificationNotifierProvider.notifier)
-            .addLocal(noti.copyWith(taskId: created.id));
+            .upsertLocal(noti.copyWith(taskId: created.id));
       }
     } catch (_) {
       // rollback everything

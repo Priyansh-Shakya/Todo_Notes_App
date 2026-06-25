@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_notes/Data/Models/notiModel.dart';
 import 'package:todo_notes/Presentation/Providers/notiProvider.dart';
@@ -28,24 +27,24 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
     state = AsyncValue.data(noti);
   }
 
-  /// Optimistic add (KEEP temp taskId)
-  Future<void> addLocal(NotificationModel noti) async {
+  /// Optimistic add-or-update (backend is upsert, so local state must match)
+  Future<void> upsertLocal(NotificationModel noti) async {
     final prev = state.value ?? [];
 
-    state = AsyncValue.data([...prev, noti]);
+    final exists = prev.any((n) => n.taskId == noti.taskId);
+    final temp = exists
+        ? prev.map((n) => n.taskId == noti.taskId ? noti : n).toList()
+        : [...prev, noti];
 
-    debugPrint("Noti taskId: ${noti.taskId}");
+    state = AsyncValue.data(temp);
 
     try {
       final service = ref.read(notificcationServiceProvider);
       await service.sendTaskNotification(noti, noti.taskId!);
-    } catch (_) {
-      // rollback
-      state = AsyncValue.data(
-        prev.where((n) => n.taskId != noti.taskId).toList(),
-      );
+    } catch (err) {
+      // rollback to the exact prior state — not a derived filter
+      state = AsyncValue.data(prev);
     }
-    
   }
 
   /// 🔥 THE IMPORTANT PART

@@ -27,14 +27,14 @@ async def write_todo(todo: WriteTodo, user, supabase: Client):
     response = (
         supabase
         .table("todos")
-        .insert(data)
+        .insert(data)  
         .execute()
-    )
+    )   
 
     return ReadTodo(**response.data[0])
 
 
-async def update_todo(id: int, todo: UpdateTodo, user, supabase: Client):
+async def update_todo(id: int, todo: UpdateTodo, user, supabase: Client) -> ReadTodo:
     response = (
         supabase
         .table("todos")
@@ -45,25 +45,11 @@ async def update_todo(id: int, todo: UpdateTodo, user, supabase: Client):
     )
 
     if not response.data:
-        raise HTTPException(status_code=404, detail="Todo not found")
+        raise HTTPException(status_code=404, detail="Todo not found or not yours")
 
     return ReadTodo(**response.data[0])
 
 
-async def edit_todo(id: int, todo: EditTodo, user, supabase: Client):
-    response = (
-        supabase
-        .table("todos")
-        .update(todo.model_dump(exclude_unset=True))
-        .eq("id", id)
-        .eq("user_id", user["id"])
-        .execute()
-    )
-
-    if not response.data:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    return ReadTodo(**response.data[0])
 
 
 

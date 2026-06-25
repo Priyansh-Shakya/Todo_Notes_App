@@ -24,11 +24,6 @@ class TodoRepo {
     return model.toTodoEntity();
   }
 
-  Future<TodoEntity> editT({required TodoModel todo, required int id}) async {
-    final model = await api.editTodo(todo: todo, id: id);
-    return model.toTodoEntity();
-  }
-
   Future<void> deleteT({required int id}) async {
     return await api.deleteTodo(id: id);
   }
