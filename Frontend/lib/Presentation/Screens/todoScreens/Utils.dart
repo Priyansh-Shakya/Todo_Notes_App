@@ -44,25 +44,22 @@ String createdAtSliced(String? timeString) {
   return '$day/$month/$year';
 }
 
+String formatSingleTime(String t) {
+  final match = RegExp(r"(\d{1,2}):(\d{2})(?::\d{2})?").firstMatch(t);
+  if (match == null) return t;
+
+  final hour24 = int.tryParse(match.group(1)!);
+  final minute = match.group(2)!;
+  if (hour24 == null) return t;
+
+  final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
+  final amPm = hour24 >= 12 ? 'PM' : 'AM';
+  return '$hour12:$minute $amPm';
+}
+
 String formatTimes(List<String>? times) {
   if (times == null || times.isEmpty) return 'Not Set';
-
-  return times
-      .map((t) {
-        // Extract HH:MM (with optional :SS) from various possible formats
-        // Examples handled: "10:30:00", "10:30", "TimeOfDay(10:30)"
-        final match = RegExp(r"(\d{1,2}):(\d{2})(?::\d{2})?").firstMatch(t);
-        if (match == null) return t;
-
-        final hour24 = int.tryParse(match.group(1)!);
-        final minute = match.group(2)!;
-        if (hour24 == null) return t;
-
-        final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
-        final amPm = hour24 >= 12 ? 'PM' : 'AM';
-        return '$hour12:$minute $amPm';
-      })
-      .join(', ');
+  return times.map(formatSingleTime).join(', ');
 }
 
 void showInfoOnce(BuildContext context) async {

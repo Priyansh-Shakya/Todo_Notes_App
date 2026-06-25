@@ -179,25 +179,12 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
           .read(todoNotifierProvider.notifier)
           .updateTodo(todo: todoModel, id: todoModel.id!);
       debugPrint(" ++++++++++++++++++++++++ Sending update todo API ");
-
-      // pop off bottom sheet
-      Navigator.of(context).pop();
     } catch (e) {
       _showSnack('Failed to update task');
     }
   }
 
   Future<void> _persistNotification(NotificationModel? existing) async {
-    // if (!_isNotiOn) {
-    //   if (existing != null) {
-    //     // TODO: await ref.read(notificationNotifierProvider.notifier)
-    //     //           .deleteNotification(existing.id);
-    //   }
-    //   return;
-    // }
-
-    final service = ref.read(notificcationServiceProvider);
-
     final payload = NotificationModel(
       taskId: widget.todo.id,
       scheduleType: _selectedType!,
@@ -217,11 +204,6 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
           .read(notificationNotifierProvider.notifier)
           .upsertLocal(payload);
       debugPrint(" ++++++++++++++++++++++++ Sending update notification API ");
-
-      //await service.sendTaskNotification(payload, widget.todo.id!);
-
-      // Refresh notification list
-      // await ref.read(notificationNotifierProvider.notifier).refreshList();
     } catch (e) {
       _showSnack('Failed to save notification');
     }
@@ -263,7 +245,6 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
 
     await _persistTaskText(_taskController.text.trim());
     await _persistNotification(existing);
-
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -332,10 +313,10 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
                       width: double.infinity,
                       child: FilledButton(
                         onPressed: () {
-                          ref
-                              .read(notificationNotifierProvider.notifier)
-                              .refreshList();
                           _onSave(notification);
+                          // ref
+                          //     .read(notificationNotifierProvider.notifier)
+                          //     .refreshList();
                         },
                         child: const Text('Save'),
                       ),
@@ -538,22 +519,8 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
       runSpacing: 6,
       children: [
         ..._selectedTimes.map((t) {
-          String display;
-          // If it's TimeOfDay.toString(), extract between parentheses
-          final s = t.toString();
-          final timeOfDayMatch = RegExp(
-            r"TimeOfDay\((\d{1,2}:\d{2})\)",
-          ).firstMatch(s);
-          if (timeOfDayMatch != null) {
-            display = timeOfDayMatch.group(1)!;
-          } else {
-            // Try to find HH:MM pattern anywhere (covers "10:30:00" or "10:30")
-            final hhmm = RegExp(r"(\d{1,2}:\d{2})").firstMatch(s);
-            display = hhmm?.group(1) ?? s;
-          }
-
           return Chip(
-            label: Text(display),
+            label: Text(formatSingleTime(t)),
             deleteIcon: const Icon(Icons.close),
             onDeleted: () => _removeTime(t),
           );
