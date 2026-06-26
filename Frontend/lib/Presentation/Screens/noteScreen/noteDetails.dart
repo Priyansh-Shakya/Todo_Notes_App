@@ -114,23 +114,25 @@ class _NoteDetailsState extends ConsumerState<NoteDetails> {
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: isEditMode
-                  ? TextField(
-                      controller: contentCtr,
-                      maxLines: null,
-                      decoration: InputDecoration(
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: isEditMode
+                    ? TextField(
+                        controller: contentCtr,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          hintStyle: TextStyle(color: Colors.grey),
+                          border: InputBorder.none,
+                        ),
+                        cursorColor: Theme.of(context).colorScheme.onSurface,
+                      )
+                    : Text(
+                        note.content,
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                      cursorColor: Theme.of(context).colorScheme.onSurface,
-                    )
-                  : Text(
-                      note.content,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
+              ),
             ),
           ),
           floatingActionButton: FloatingActionButton(

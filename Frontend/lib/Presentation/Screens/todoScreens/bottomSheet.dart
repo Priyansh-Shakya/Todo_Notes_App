@@ -268,61 +268,63 @@ class _TodoBottomSheetState extends ConsumerState<TodoBottomSheet> {
         final isComp = widget.todo.isComplete;
         final date = createdAtSliced(widget.todo.createdAt);
 
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.70,
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: Colors.black26,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  widget.isEditMode ? 'Edit Task' : 'Task Details',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: widget.isEditMode
-                        ? _buildEditBody(context, notification)
-                        : _buildViewBody(notification, isComp, date),
-                  ),
-                ),
-
-                if (widget.isEditMode)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          _onSave(notification);
-                          // ref
-                          //     .read(notificationNotifierProvider.notifier)
-                          //     .refreshList();
-                        },
-                        child: const Text('Save'),
-                      ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.70,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: Colors.black26,
                     ),
                   ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.isEditMode ? 'Edit Task' : 'Task Details',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: widget.isEditMode
+                          ? _buildEditBody(context, notification)
+                          : _buildViewBody(notification, isComp, date),
+                    ),
+                  ),
+
+                  if (widget.isEditMode)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () {
+                            _onSave(notification);
+                            // ref
+                            //     .read(notificationNotifierProvider.notifier)
+                            //     .refreshList();
+                          },
+                          child: const Text('Save'),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );

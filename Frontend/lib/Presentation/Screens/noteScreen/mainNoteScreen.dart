@@ -108,115 +108,121 @@ class MainNoteScreen extends ConsumerWidget {
                 () => notifier.refreshList(),
               );
             },
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: notes.length,
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.80, // tweak to adjust card height
-              ),
-              itemBuilder: (context, index) {
-                final note = notes[index];
-                final isSelected = selectedIds.contains(note.id);
-                debugPrint("Pinned: ${note.pinned}");
+            child: SafeArea(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: notes.length,
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.80, // tweak to adjust card height
+                ),
+                itemBuilder: (context, index) {
+                  final note = notes[index];
+                  final isSelected = selectedIds.contains(note.id);
+                  debugPrint("Pinned: ${note.pinned}");
 
-                return GestureDetector(
-                  onTap: () {
-                    if (isDeleteMode) {
-                      _toggleSelection(ref, note.id);
-                    } else {
-                      debugPrint(
-                        "id:${note.id}\ntitle:${note.title}\ncontent:${note.content}",
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NoteDetails(
-                            noteId: note.id,
-                            isPinned: note.pinned,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  onLongPress: () {
-                    ref.read(deleteModeProvider.notifier).state = true;
-                    _toggleSelection(ref, note.id);
-                  },
-                  child: Card(
-                    elevation: 6,
-
-                    color: isSelected
-                        ? Colors.blue.withOpacity(0.3)
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                note.title,
-                                style: Theme.of(context).textTheme.titleLarge,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 10),
-                              Expanded(
-                                child: Text(
-                                  (numberOfLines(note.content) > 3)
-                                      ? slicedTask(note.content)
-                                      : note.content,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  overflow: TextOverflow.fade,
-                                ),
-                              ),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Text(
-                                    createdAtSliced(note.createdAt),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
-                                        .copyWith(
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall!
-                                              .color!
-                                              .withOpacity(0.5),
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (note.pinned)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Icon(
-                              Icons.push_pin,
-                              color: Color(0xFFFFD700),
-                              size: 18,
+                  return GestureDetector(
+                    onTap: () {
+                      if (isDeleteMode) {
+                        _toggleSelection(ref, note.id);
+                      } else {
+                        debugPrint(
+                          "id:${note.id}\ntitle:${note.title}\ncontent:${note.content}",
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NoteDetails(
+                              noteId: note.id,
+                              isPinned: note.pinned,
                             ),
                           ),
-                      ],
+                        );
+                      }
+                    },
+                    onLongPress: () {
+                      ref.read(deleteModeProvider.notifier).state = true;
+                      _toggleSelection(ref, note.id);
+                    },
+                    child: Card(
+                      elevation: 6,
+
+                      color: isSelected
+                          ? Colors.blue.withOpacity(0.3)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  note.title,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 10),
+                                Expanded(
+                                  child: Text(
+                                    (numberOfLines(note.content) > 3)
+                                        ? slicedTask(note.content)
+                                        : note.content,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
+                                    overflow: TextOverflow.fade,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: Text(
+                                      createdAtSliced(note.createdAt),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .color!
+                                                .withOpacity(0.5),
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (note.pinned)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Icon(
+                                Icons.push_pin,
+                                color: Color(0xFFFFD700),
+                                size: 18,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           );
         },
